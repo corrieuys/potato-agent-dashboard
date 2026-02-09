@@ -1,0 +1,13 @@
+{
+    "name": "potato-cloud",
+    "main": "src/index.ts",
+    "compatibility_date": "2026-02-05",
+    "d1_databases": [
+        {
+            "binding": "DB",
+            "database_name": "potato-cloud",
+            "database_id": "581203dd-6158-40e7-b807-4489fb350fbd",
+            "migrations_dir": "./drizzle"
+        }
+    ]
+}

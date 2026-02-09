@@ -1,0 +1,41 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1770568049012,
+      "tag": "0000_tough_cassandra_nova",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1770569000000,
+      "tag": "0001_add_docker_fields",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1770585395022,
+      "tag": "0002_deep_gateway",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1770670878944,
+      "tag": "0003_milky_raza",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1770671184800,
+      "tag": "0004_freezing_cerebro",
+      "breakpoints": true
+    }
+  ]
+}
