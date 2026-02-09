@@ -6,13 +6,8 @@ import * as templates from "../templates";
 
 const htmlRoutes = new Hono<{ Bindings: CloudflareBindings }>();
 
-// Home page
-htmlRoutes.get("/", async (c) => {
-	return c.html(templates.homePage());
-});
-
 // Stacks dashboard - list all stacks
-htmlRoutes.get("/stacks", async (c) => {
+htmlRoutes.get("/", async (c) => {
 	const db = createClient(c.env.DB);
 	const allStacks = await db.select().from(stacks).orderBy(desc(stacks.createdAt));
 

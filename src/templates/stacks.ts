@@ -48,38 +48,40 @@ export function emptyStacksMessage(): string {
 export function createStackForm(): string {
     return `<div id="create-stack-modal" class="modal" hx-on::click="if(event.target === this) this.remove()">
     <div class="modal-card">
-      <div class="modal-title">Create New Stack</div>
-      <p class="subtle">Define a workspace for services, agents, and routing.</p>
-      <div class="divider"></div>
-      <form hx-post="/api/stacks"
-            hx-target="#stacks-table-container"
-            hx-swap="innerHTML"
-            hx-on::after-request="if(event.detail.successful) document.getElementById('create-stack-modal').remove()"
-            hx-indicator="#submit-spinner">
-        <div class="grid gap-4">
-          <div class="field">
-            <label class="label" for="stack-name">Name *</label>
-            <input type="text" id="stack-name" name="name" required class="input" placeholder="Production control plane">
-          </div>
-          <div class="field">
-            <label class="label" for="stack-description">Description</label>
-            <textarea id="stack-description" name="description" rows="3" class="input" placeholder="What does this stack own?"></textarea>
-          </div>
-        </div>
+      <div class="modal-body">
+        <div class="modal-title">Create New Stack</div>
+        <p class="subtle">Define a workspace for services, agents, and routing.</p>
         <div class="divider"></div>
-        <div class="flex items-center justify-between">
-          <button type="button" onclick="document.getElementById('create-stack-modal').remove()" class="btn btn-ghost">Cancel</button>
-          <div class="flex items-center gap-2">
-            <div id="submit-spinner" class="htmx-indicator">
-              <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
+        <form hx-post="/api/stacks"
+              hx-target="#stacks-table-container"
+              hx-swap="innerHTML"
+              hx-on::after-request="if(event.detail.successful) document.getElementById('create-stack-modal').remove()"
+              hx-indicator="#submit-spinner">
+          <div class="grid gap-4">
+            <div class="field">
+              <label class="label" for="stack-name">Name *</label>
+              <input type="text" id="stack-name" name="name" required class="input" placeholder="Production control plane">
             </div>
-            <button type="submit" class="btn btn-primary">Create Stack</button>
+            <div class="field">
+              <label class="label" for="stack-description">Description</label>
+              <textarea id="stack-description" name="description" rows="3" class="input" placeholder="What does this stack own?"></textarea>
+            </div>
           </div>
-        </div>
-      </form>
+          <div class="divider"></div>
+          <div class="flex items-center justify-between">
+            <button type="button" onclick="document.getElementById('create-stack-modal').remove()" class="btn btn-ghost">Cancel</button>
+            <div class="flex items-center gap-2">
+              <div id="submit-spinner" class="htmx-indicator">
+                <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              </div>
+              <button type="submit" class="btn btn-primary">Create Stack</button>
+            </div>
+          </div>
+        </form>
+      </div>
     </div>
   </div>`;
 }
