@@ -24,6 +24,7 @@ export function createServicePage(stack: Stack): string {
             hx-target="#service-create-feedback"
             hx-swap="innerHTML"
             hx-on::after-request="if(event.detail.successful) window.location = '/stacks/${stack.id}'"
+            hx-on::response-error="const target = document.getElementById('service-create-feedback'); if (target) target.textContent = event.detail.xhr.responseText || 'Request failed';"
             hx-indicator="#submit-spinner"
             class="space-y-8">
         <div id="service-create-feedback"></div>
@@ -329,6 +330,7 @@ export function editServicePage(stack: Stack, service: Service): string {
             hx-target="#service-edit-feedback"
             hx-swap="innerHTML"
             hx-on::after-request="if(event.detail.successful) window.location = '/stacks/${stack.id}'"
+            hx-on::response-error="const target = document.getElementById('service-edit-feedback'); if (target) target.textContent = event.detail.xhr.responseText || 'Request failed';"
             hx-indicator="#submit-spinner"
             class="space-y-8">
         <div id="service-edit-feedback"></div>

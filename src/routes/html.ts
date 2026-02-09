@@ -138,6 +138,28 @@ htmlRoutes.get("/partials/agent-form", (c) => {
 	return c.html(templates.agentNameForm(stackId));
 });
 
+// Agents list partial
+htmlRoutes.get("/partials/agents", async (c) => {
+	const stackId = c.req.query("stackId");
+	if (!stackId) {
+		return c.html(templates.errorPage("Stack ID required", 400), 400);
+	}
+
+	const db = createClient(c.env.DB);
+	const stackAgents = await db
+		.select({
+			id: agents.id,
+			stackId: agents.stackId,
+			name: agents.name,
+			status: agents.status,
+			lastHeartbeatAt: agents.lastHeartbeatAt,
+		})
+		.from(agents)
+		.where(eq(agents.stackId, stackId));
+
+	return c.html(templates.agentsList(stackAgents as templates.Agent[]));
+});
+
 // Edit service page
 htmlRoutes.get("/stacks/:id/services/:serviceId/edit", async (c) => {
 	const stackId = c.req.param("id");
