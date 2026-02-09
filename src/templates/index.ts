@@ -5,5 +5,4 @@ export * from "./stacks.js";
 export * from "./services.js";
 export * from "./agents.js";
 export * from "./docs.js";
-export * from "./home.js";
 export * from "./error.js";
