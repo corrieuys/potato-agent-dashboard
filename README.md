@@ -161,12 +161,12 @@ On the Stack Detail page:
 3. Click "Generate Token"
 4. Copy the install command shown - it will look like:
    ```bash
-   curl -fsSL https://your-domain.com/install.sh | sudo bash -s -- --token <INSTALL_TOKEN> --control-plane https://your-control-plane.workers.dev
+   curl -fsSL https://raw.githubusercontent.com/corrieuys/potato-cloud-agent/main/install.sh | sudo bash -s -- --token <INSTALL_TOKEN> --control-plane https://your-control-plane.workers.dev
    ```
 
 5. **SSH into your Linux server** and run the install command:
    ```bash
-   curl -fsSL https://your-domain.com/install.sh | sudo bash -s -- --token <INSTALL_TOKEN> --control-plane https://your-control-plane.workers.dev
+   curl -fsSL https://raw.githubusercontent.com/corrieuys/potato-cloud-agent/main/install.sh | sudo bash -s -- --token <INSTALL_TOKEN> --control-plane https://your-control-plane.workers.dev
    ```
 
 The install script will:
