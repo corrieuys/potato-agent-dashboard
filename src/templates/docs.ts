@@ -2,7 +2,7 @@ import { layout } from "./layout.js";
 
 // Documentation page
 export function docsPage(): string {
-  const content = `
+    const content = `
   <div class="docs-hero panel panel-strong">
     <div class="kicker">Documentation</div>
     <h1 class="headline mt-2">Potato Cloud Guide</h1>
@@ -106,11 +106,11 @@ export function docsPage(): string {
   </style>
   `;
 
-  return layout(content, "Documentation - Potato Cloud");
+    return layout(content, "Documentation - Potato Cloud");
 }
 
 function docsContent(): string {
-  return `
+    return `
     <section id="what-you-need-before-you-start" class="docs-section">
       <h2>What You Need Before You Start</h2>
       <ul>

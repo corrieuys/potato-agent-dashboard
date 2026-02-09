@@ -2,7 +2,7 @@ import { layout } from "./layout.js";
 
 // Home page - refined and minimal
 export function homePage(): string {
-  const content = `
+    const content = `
   <div class="space-y-16">
     <section class="panel panel-strong home-hero">
       <div class="grid lg:grid-cols-2 gap-10 items-center">
@@ -124,5 +124,5 @@ export function homePage(): string {
   </style>
   `;
 
-  return layout(content, "Potato Cloud - Simple Cloud Management");
+    return layout(content, "Potato Cloud - Simple Cloud Management");
 }

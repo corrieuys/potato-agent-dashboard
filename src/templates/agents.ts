@@ -3,7 +3,7 @@ import type { Agent } from "./types.js";
 
 // Create agent form (for install token generation)
 export function createAgentForm(stackId: string, installToken: string, installCommand: string): string {
-  return `<div id="create-agent-modal" class="modal" hx-on::click="if(event.target === this) this.remove()">
+    return `<div id="create-agent-modal" class="modal" hx-on::click="if(event.target === this) this.remove()">
     <div class="modal-card">
       <div class="modal-title">Add New Agent</div>
       <p class="subtle">Install this agent on the server to link it to your stack.</p>
@@ -28,7 +28,7 @@ export function createAgentForm(stackId: string, installToken: string, installCo
 
 // Agent form initial (just name input)
 export function agentNameForm(stackId: string): string {
-  return `<div id="create-agent-modal" class="modal" hx-on::click="if(event.target === this) this.remove()">
+    return `<div id="create-agent-modal" class="modal" hx-on::click="if(event.target === this) this.remove()">
     <div class="modal-card">
       <div class="modal-title">Add New Agent</div>
       <p class="subtle">Name it for quick recognition, then generate a one-time token.</p>
@@ -62,14 +62,14 @@ export function agentNameForm(stackId: string): string {
 
 // Agents list partial
 export function agentsList(agents: Agent[]): string {
-  if (!agents || agents.length === 0) {
-    return `<div class="panel panel-strong text-center py-10">
+    if (!agents || agents.length === 0) {
+        return `<div class="panel panel-strong text-center py-10">
       <p class="headline text-xl">No agents yet</p>
       <p class="subtle mt-2">Register an agent to start syncing desired state.</p>
     </div>`;
-  }
+    }
 
-  return `<div class="card-grid">${agents.map(a => `
+    return `<div class="card-grid">${agents.map(a => `
     <div class="panel panel-hover">
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -84,11 +84,11 @@ export function agentsList(agents: Agent[]): string {
             Edit
           </button>
           <span class="badge ${a.status === "online"
-      ? "badge-green"
-      : a.status === "pending"
-        ? "badge-yellow"
-        : "badge-gray"
-    }">${escapeHtml(a.status || "Unknown")}</span>
+            ? "badge-green"
+            : a.status === "pending"
+                ? "badge-yellow"
+                : "badge-gray"
+        }">${escapeHtml(a.status || "Unknown")}</span>
         </div>
       </div>
     </div>
@@ -97,7 +97,7 @@ export function agentsList(agents: Agent[]): string {
 
 // Edit agent form
 export function editAgentForm(stackId: string, agent: Agent): string {
-  return `<div id="edit-agent-modal" class="modal" hx-on::click="if(event.target === this) this.remove()">
+    return `<div id="edit-agent-modal" class="modal" hx-on::click="if(event.target === this) this.remove()">
     <div class="modal-card">
       <div class="modal-title">Edit Agent</div>
       <p class="subtle">Update the agent label used in the dashboard.</p>

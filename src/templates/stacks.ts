@@ -6,7 +6,7 @@ import type { Agent, Service, Stack } from "./types.js";
 
 // Stack list partial
 export function stackList(stacksList: Stack[]): string {
-  return `<div id="stacks-table" class="card-grid card-grid-2 fade-in">
+    return `<div id="stacks-table" class="card-grid card-grid-2 fade-in">
     ${stacksList.map(stack => `
       <div class="panel panel-hover">
         <div class="flex items-start justify-between gap-4">
@@ -15,11 +15,11 @@ export function stackList(stacksList: Stack[]): string {
             <p class="subtle mt-2">${stack.description ? escapeHtml(stack.description) : "No description"}</p>
           </div>
           <span class="badge ${stack.securityMode === "blocked"
-      ? "badge-green"
-      : stack.securityMode === "daemon-port"
-        ? "badge-yellow"
-        : "badge-gray"
-    }">${escapeHtml(stack.securityMode)}</span>
+            ? "badge-green"
+            : stack.securityMode === "daemon-port"
+                ? "badge-yellow"
+                : "badge-gray"
+        }">${escapeHtml(stack.securityMode)}</span>
         </div>
         <div class="divider"></div>
         <div class="flex items-center justify-between">
@@ -38,7 +38,7 @@ export function stackList(stacksList: Stack[]): string {
 
 // Empty stacks message
 export function emptyStacksMessage(): string {
-  return `<div class="panel panel-strong text-center py-12">
+    return `<div class="panel panel-strong text-center py-12">
     <p class="headline text-2xl">No stacks yet</p>
     <p class="subtle mt-2">Create your first stack to start orchestrating builds.</p>
   </div>`;
@@ -46,7 +46,7 @@ export function emptyStacksMessage(): string {
 
 // Create stack form
 export function createStackForm(): string {
-  return `<div id="create-stack-modal" class="modal" hx-on::click="if(event.target === this) this.remove()">
+    return `<div id="create-stack-modal" class="modal" hx-on::click="if(event.target === this) this.remove()">
     <div class="modal-card">
       <div class="modal-title">Create New Stack</div>
       <p class="subtle">Define a workspace for services, agents, and routing.</p>
@@ -86,11 +86,11 @@ export function createStackForm(): string {
 
 // Dashboard page
 export function dashboard(stacksList: Stack[]): string {
-  const tableContent = stacksList.length === 0
-    ? emptyStacksMessage()
-    : stackList(stacksList);
+    const tableContent = stacksList.length === 0
+        ? emptyStacksMessage()
+        : stackList(stacksList);
 
-  const content = `<div class="space-y-10">
+    const content = `<div class="space-y-10">
     <section class="panel panel-strong">
       <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
         <div>
@@ -114,15 +114,15 @@ export function dashboard(stacksList: Stack[]): string {
     </section>
   </div>`;
 
-  return layout(content);
+    return layout(content);
 }
 
 // Stack detail page
 export function stackDetail(stack: Stack, services: Service[], agents: Agent[]): string {
-  const servicesContent = servicesList(services);
-  const agentsContent = agentsList(agents);
+    const servicesContent = servicesList(services);
+    const agentsContent = agentsList(agents);
 
-  const content = `<div class="space-y-10">
+    const content = `<div class="space-y-10">
     <section class="panel panel-strong" style="padding: 16px 20px;">
       <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div class="flex items-center gap-3">
@@ -177,5 +177,5 @@ export function stackDetail(stack: Stack, services: Service[], agents: Agent[]):
     </section>
   </div>`;
 
-  return layout(content, stack.name);
+    return layout(content, stack.name);
 }

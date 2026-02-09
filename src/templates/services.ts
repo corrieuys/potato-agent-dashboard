@@ -4,7 +4,7 @@ import type { Service, Stack } from "./types.js";
 
 // Create service page
 export function createServicePage(stack: Stack): string {
-  const content = `<div id="service-create-page" class="space-y-8">
+    const content = `<div id="service-create-page" class="space-y-8">
     <section class="panel panel-strong">
       <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
         <div>
@@ -245,19 +245,19 @@ export function createServicePage(stack: Stack): string {
     </script>
   </div>`;
 
-  return layout(content, `Add Service - ${escapeHtml(stack.name)}`);
+    return layout(content, `Add Service - ${escapeHtml(stack.name)}`);
 }
 
 // Services list partial
 export function servicesList(services: Service[]): string {
-  if (!services || services.length === 0) {
-    return `<div class="panel panel-strong text-center py-10">
+    if (!services || services.length === 0) {
+        return `<div class="panel panel-strong text-center py-10">
       <p class="headline text-xl">No services yet</p>
       <p class="subtle mt-2">Add a service to begin builds and routing.</p>
     </div>`;
-  }
+    }
 
-  return `<div class="card-grid">${services.map(s => `
+    return `<div class="card-grid">${services.map(s => `
     <div class="service-card">
       <div class="service-header">
         <div>
@@ -303,13 +303,13 @@ export function servicesList(services: Service[]): string {
 
 // Edit service page
 export function editServicePage(stack: Stack, service: Service): string {
-  const environmentVarsValue = service.environmentVars
-    ? (typeof service.environmentVars === "string"
-      ? service.environmentVars
-      : JSON.stringify(service.environmentVars, null, 2))
-    : "";
+    const environmentVarsValue = service.environmentVars
+        ? (typeof service.environmentVars === "string"
+            ? service.environmentVars
+            : JSON.stringify(service.environmentVars, null, 2))
+        : "";
 
-  const content = `<div id="service-edit-page" class="space-y-8">
+    const content = `<div id="service-edit-page" class="space-y-8">
     <section class="panel panel-strong">
       <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
         <div>
@@ -550,5 +550,5 @@ export function editServicePage(stack: Stack, service: Service): string {
     </script>
   </div>`;
 
-  return layout(content, `Edit Service - ${escapeHtml(stack.name)}`);
+    return layout(content, `Edit Service - ${escapeHtml(stack.name)}`);
 }
