@@ -22,7 +22,7 @@ export async function notifyAgent(
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     };
-    
+
     if (apiKey) {
       headers['Authorization'] = `Bearer ${apiKey}`;
     }
@@ -34,17 +34,17 @@ export async function notifyAgent(
     });
 
     if (!response.ok) {
-      return { 
-        success: false, 
-        error: `HTTP ${response.status}: ${response.statusText}` 
+      return {
+        success: false,
+        error: `HTTP ${response.status}: ${response.statusText}`
       };
     }
 
     return { success: true };
   } catch (error) {
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Unknown error' 
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
     };
   }
 }
@@ -60,7 +60,7 @@ export async function notifyStackAgents(
 ): Promise<{ notified: number; failed: number; errors: string[] }> {
   const { eq } = await import('drizzle-orm');
   const { agents } = await import('../db/schema');
-  
+
   // Get all online agents with endpoints configured
   const stackAgents = await db
     .select({

@@ -45,13 +45,13 @@ desiredStateRoutes.get("/", async (c) => {
 	// Get version info for services in blue-green mode
 	const serviceIds = stackServices.filter(s => s.blueGreenMode).map(s => s.id);
 	let versionsMap: Record<string, any[]> = {};
-	
+
 	if (serviceIds.length > 0) {
 		const versions = await db
 			.select()
 			.from(serviceVersions)
 			.where(eq(serviceVersions.stackId, stackId));
-		
+
 		// Group versions by service_id
 		versions.forEach(v => {
 			if (!versionsMap[v.serviceId]) {
