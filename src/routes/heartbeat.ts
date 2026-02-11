@@ -61,7 +61,7 @@ heartbeatRoutes.post("/", async (c) => {
 				(typeof (securityState as Record<string, unknown> | null)?.tunnel_connected ===
 					"boolean"
 					? (securityState as Record<string, unknown>).tunnel_connected
-					: agent.tunnelConnected) as boolean,
+					: false) as boolean,
 			updatedAt: sql`CURRENT_TIMESTAMP`,
 		})
 		.where(eq(agents.id, agent.id));
