@@ -100,6 +100,7 @@ export function createServicePage(stack: Stack): string {
                   <label class="label" for="service-language">Language</label>
                   <select id="service-language" name="language" class="input">
                     <option value="auto" selected>auto</option>
+                    <option value="bun">bun</option>
                     <option value="nodejs">nodejs</option>
                     <option value="golang">golang</option>
                     <option value="python">python</option>
@@ -394,6 +395,7 @@ export function editServicePage(stack: Stack, service: Service): string {
                   <label class="label" for="edit-service-language">Language</label>
                   <select id="edit-service-language" name="language" class="input">
                     <option value="auto" ${service.language === "auto" ? "selected" : ""}>auto</option>
+                    <option value="bun" ${service.language === "bun" ? "selected" : ""}>bun</option>
                     <option value="nodejs" ${service.language === "nodejs" ? "selected" : ""}>nodejs</option>
                     <option value="golang" ${service.language === "golang" ? "selected" : ""}>golang</option>
                     <option value="python" ${service.language === "python" ? "selected" : ""}>python</option>
