@@ -66,7 +66,6 @@ export async function notifyStackAgents(
     .select({
       id: agents.id,
       agentEndpoint: agents.agentEndpoint,
-      apiKey: agents.apiKey,
     })
     .from(agents)
     .where(eq(agents.stackId, stackId));
@@ -85,7 +84,7 @@ export async function notifyStackAgents(
     const result = await notifyAgent(
       agent.agentEndpoint,
       { ...payload, stack_id: stackId },
-      agent.apiKey || apiKey
+      apiKey
     );
 
     if (result.success) {

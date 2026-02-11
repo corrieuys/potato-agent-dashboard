@@ -3,7 +3,7 @@ import { eq, and, desc, sql } from "drizzle-orm";
 import { createClient } from "../db/client";
 import { stacks, agents } from "../db/schema";
 import * as templates from "../templates";
-import { generateUUID, generateToken, wantsHTML, parseBody } from "../lib/utils";
+import { generateUUID, generateToken, wantsHTML, parseBody, hashSecret } from "../lib/utils";
 
 const agentsRoutes = new Hono<{ Bindings: CloudflareBindings }>();
 
@@ -42,7 +42,7 @@ agentsRoutes.post("/tokens", async (c) => {
 
 	const id = generateUUID();
 	const installToken = generateToken(32);
-	const installCommand = `curl -fsSL https://your-domain.com/install.sh | sudo bash -s -- --token ${installToken}`;
+	const installCommand = `curl -fsSL https://potatocloud.space/install.sh | sudo bash -s -- --token ${installToken} --control-plane https://your-control-plane.workers.dev`;
 
 	await db.insert(agents).values({
 		id,
@@ -168,7 +168,7 @@ agentsRoutes.post("/:agentId/trigger-refresh", async (c) => {
 			changed_at: new Date().toISOString(),
 			change_type: "manual_trigger",
 		},
-		agent.apiKey || undefined
+		undefined
 	);
 
 	if (!result.success) {
@@ -199,11 +199,12 @@ agentsRoutes.post("/register", async (c) => {
 	}
 
 	const apiKey = generateToken(48);
+	const apiKeyHash = await hashSecret(apiKey);
 
 	await db
 		.update(agents)
 		.set({
-			apiKey,
+			apiKey: apiKeyHash,
 			installToken: null,
 			hostname: hostname || null,
 			ipAddress: ip_address || null,

@@ -262,41 +262,28 @@ export function servicesList(services: Service[]): string {
     <div class="service-card">
       <div class="service-header">
         <div>
-          <h4 class="service-title">${escapeHtml(s.name)}</h4>
+          <div class="service-title-row">
+            <h4 class="service-title">${escapeHtml(s.name)}</h4>
+            ${s.externalPath ? `<span class="service-path">${escapeHtml(s.externalPath)}</span>` : ""}
+          </div>
           <div class="service-meta mono">${escapeHtml(s.gitUrl)}</div>
           ${s.description ? `<div class="subtle" style="margin-top: 6px;">${escapeHtml(s.description)}</div>` : ""}
         </div>
         <div class="service-actions">
-          <a href="/stacks/${s.stackId}/services/${s.id}/edit" class="btn btn-ghost btn-xs">Edit</a>
+          <a href="/stacks/${s.stackId}/services/${s.id}/edit" class="btn btn-ghost btn-compact">Edit</a>
           <button hx-delete="/api/stacks/${s.stackId}/services/${s.id}"
-                  hx-confirm="Are you sure you want to delete this service?"
-                  hx-target="#services-container"
-                  class="btn btn-danger btn-xs">Delete</button>
+            hx-confirm="Are you sure you want to delete this service?"
+            hx-target="#services-container"
+            class="btn btn-danger btn-compact">Delete</button>
         </div>
       </div>
       <div class="service-divider"></div>
-      <div class="service-body">
-        <div class="service-kv">
-          <div class="service-kv-item">
-            <span>Runtime</span>
-            <strong>${escapeHtml(s.runtime || "process")}</strong>
-          </div>
-          <div class="service-kv-item">
-            <span>Port</span>
-            <strong>${s.port}</strong>
-          </div>
-          <div class="service-kv-item">
-            <span>External Path</span>
-            <strong>${escapeHtml(s.externalPath || "none")}</strong>
-          </div>
+      <div class="service-rail">
+        <div class="flex flex-wrap gap-2">
+          <span class="chip ${getStatusChipClass(s.runtimeStatus)}">${escapeHtml(s.runtimeStatus || "unknown")}</span>
+          ${s.healthStatus && s.healthStatus !== "unknown" ? `<span class="chip ${getHealthChipClass(s.healthStatus)}">${escapeHtml(s.healthStatus)}</span>` : ""}
         </div>
-        <div class="service-rail">
-          <div class="flex flex-wrap gap-2">
-            <span class="chip ${getStatusChipClass(s.runtimeStatus)}">${escapeHtml(s.runtimeStatus || "unknown")}</span>
-            ${s.healthStatus && s.healthStatus !== "unknown" ? `<span class="chip ${getHealthChipClass(s.healthStatus)}">${escapeHtml(s.healthStatus)}</span>` : ""}
-          </div>
-          ${s.agentName ? `<div class="subtle text-xs">Last seen on ${escapeHtml(s.agentName)}</div>` : ""}
-        </div>
+        ${s.agentName ? `<div class="subtle text-xs">Last seen on ${escapeHtml(s.agentName)}</div>` : ""}
       </div>
     </div>
   `).join("")}</div>`;

@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { eq, and, asc } from "drizzle-orm";
 import { createClient } from "../db/client";
 import { stacks, agents, services, serviceVersions } from "../db/schema";
-import { computeHash } from "../lib/utils";
+import { computeHash, hashSecret } from "../lib/utils";
 
 const desiredStateRoutes = new Hono<{ Bindings: CloudflareBindings }>();
 
@@ -16,11 +16,12 @@ desiredStateRoutes.get("/", async (c) => {
 	}
 
 	const db = createClient(c.env.DB);
+	const apiKeyHash = await hashSecret(apiKey);
 
 	const [agent] = await db
 		.select()
 		.from(agents)
-		.where(and(eq(agents.stackId, stackId), eq(agents.apiKey, apiKey)));
+		.where(and(eq(agents.stackId, stackId), eq(agents.apiKey, apiKeyHash)));
 
 	if (!agent) {
 		return c.json({ error: "Invalid API key" }, 401);

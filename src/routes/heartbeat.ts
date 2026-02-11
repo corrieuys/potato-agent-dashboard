@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { eq, sql } from "drizzle-orm";
 import { createClient } from "../db/client";
 import { agents, heartbeats } from "../db/schema";
+import { hashSecret } from "../lib/utils";
 
 const heartbeatRoutes = new Hono<{ Bindings: CloudflareBindings }>();
 
@@ -15,11 +16,12 @@ heartbeatRoutes.post("/", async (c) => {
 
 	const body = await c.req.json();
 	const db = createClient(c.env.DB);
+	const apiKeyHash = await hashSecret(apiKey);
 
 	const [agent] = await db
 		.select()
 		.from(agents)
-		.where(eq(agents.apiKey, apiKey));
+		.where(eq(agents.apiKey, apiKeyHash));
 
 	if (!agent) {
 		return c.json({ error: "Invalid API key" }, 401);

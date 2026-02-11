@@ -36,6 +36,17 @@ export function computeHash(data: string): string {
 }
 
 /**
+ * Hash a secret using SHA-256 (hex)
+ */
+export async function hashSecret(value: string): Promise<string> {
+	const data = new TextEncoder().encode(value);
+	const digest = await crypto.subtle.digest("SHA-256", data);
+	return Array.from(new Uint8Array(digest))
+		.map((byte) => byte.toString(16).padStart(2, "0"))
+		.join("");
+}
+
+/**
  * Check if the request wants HTML (for HTMX or browser requests)
  */
 export function wantsHTML(c: { req: { header: (name: string) => string | undefined } }): boolean {

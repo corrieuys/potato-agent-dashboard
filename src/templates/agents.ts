@@ -86,13 +86,13 @@ export function agentsList(agents: Agent[]): string {
           <button hx-get="/partials/agent-edit-form?stackId=${a.stackId}&agentId=${a.id}"
                   hx-target="body"
                   hx-swap="beforeend"
-                  class="btn btn-ghost btn-xs">
+                  class="btn btn-ghost btn-compact">
             Edit
           </button>
           <button hx-delete="/api/stacks/${a.stackId}/agents/${a.id}"
                   hx-confirm="Are you sure you want to delete this agent?"
                   hx-target="#agents-container"
-                  class="btn btn-danger btn-xs">
+                  class="btn btn-danger btn-compact">
             Delete
           </button>
           <span class="badge ${a.status === "online"

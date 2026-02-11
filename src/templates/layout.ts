@@ -55,10 +55,10 @@ export function layout(content: string, title: string = "Potato Cloud"): string 
       --accent: #0f766e;
       --accent-2: #f59e0b;
       --accent-3: #ef4444;
-      --shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
-      --radius-lg: 20px;
-      --radius-md: 14px;
-      --radius-sm: 10px;
+      --shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
+      --radius-lg: 16px;
+      --radius-md: 12px;
+      --radius-sm: 8px;
     }
     .dark {
       color-scheme: dark;
@@ -74,7 +74,7 @@ export function layout(content: string, title: string = "Potato Cloud"): string 
       --accent: #14b8a6;
       --accent-2: #f59e0b;
       --accent-3: #f97316;
-      --shadow: 0 22px 44px rgba(0, 0, 0, 0.35);
+      --shadow: 0 16px 34px rgba(0, 0, 0, 0.35);
     }
     * { box-sizing: border-box; }
     body {
@@ -130,15 +130,15 @@ export function layout(content: string, title: string = "Potato Cloud"): string 
     .nav-inner {
       max-width: 1200px;
       margin: 0 auto;
-      padding: 16px 24px;
-      min-height: 64px;
+      padding: 12px 20px;
+      min-height: 56px;
       display: flex;
       align-items: center;
       justify-content: space-between;
     }
     .brand {
       font-weight: 700;
-      font-size: 1.2rem;
+      font-size: 1.05rem;
       letter-spacing: -0.02em;
       line-height: 1;
       color: var(--ink);
@@ -150,8 +150,8 @@ export function layout(content: string, title: string = "Potato Cloud"): string 
     .brand svg { display: block; }
     .brand-badge {
       font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;
-      font-size: 0.7rem;
-      padding: 4px 8px;
+      font-size: 0.65rem;
+      padding: 3px 7px;
       border-radius: 999px;
       background: rgba(15, 118, 110, 0.12);
       color: var(--accent);
@@ -162,7 +162,7 @@ export function layout(content: string, title: string = "Potato Cloud"): string 
       color: var(--muted);
       text-decoration: none;
       font-weight: 500;
-      padding: 6px 10px;
+      padding: 5px 8px;
       border-radius: 999px;
     }
     .nav-link:hover { color: var(--ink); background: rgba(148, 163, 184, 0.12); }
@@ -170,7 +170,7 @@ export function layout(content: string, title: string = "Potato Cloud"): string 
       border: 1px solid var(--panel-border);
       background: var(--panel);
       border-radius: 999px;
-      padding: 8px;
+      padding: 6px;
       color: var(--muted);
       display: grid;
       place-items: center;
@@ -183,10 +183,10 @@ export function layout(content: string, title: string = "Potato Cloud"): string 
       z-index: 1;
       max-width: 1200px;
       margin: 0 auto;
-      padding: 36px 24px 60px;
+      padding: 28px 20px 48px;
     }
-    .kicker { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.18em; color: var(--muted); }
-    .headline { font-size: clamp(2rem, 4vw, 3.2rem); font-weight: 700; letter-spacing: -0.03em; }
+    .kicker { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.18em; color: var(--muted); }
+    .headline { font-size: clamp(1.7rem, 3.6vw, 2.6rem); font-weight: 700; letter-spacing: -0.03em; }
     .subtle { color: var(--muted); }
     .mono { font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace; }
 
@@ -195,7 +195,7 @@ export function layout(content: string, title: string = "Potato Cloud"): string 
       border: 1px solid var(--panel-border);
       border-radius: var(--radius-lg);
       box-shadow: var(--shadow);
-      padding: 22px;
+      padding: 18px;
     }
     .panel-strong { background: var(--panel-strong); }
     .panel-hover { transition: transform 0.2s ease, border-color 0.2s ease; }
@@ -203,7 +203,7 @@ export function layout(content: string, title: string = "Potato Cloud"): string 
 
     .btn {
       border-radius: 999px;
-      padding: 10px 18px;
+      padding: 8px 14px;
       font-weight: 600;
       display: inline-flex;
       align-items: center;
@@ -230,16 +230,31 @@ export function layout(content: string, title: string = "Potato Cloud"): string 
       border-color: rgba(239, 68, 68, 0.3);
     }
     .btn-xs { padding: 6px 12px; font-size: 0.75rem; }
+    .btn-compact {
+      padding: 5px 10px;
+      font-size: 0.68rem;
+      min-height: 28px;
+      border-radius: 999px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .btn-hero {
+      min-height: 38px;
+      padding: 8px 14px;
+      font-size: 0.85rem;
+      letter-spacing: 0.01em;
+    }
+    .btn-hero svg { width: 18px; height: 18px; }
 
     .chip {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 4px 10px;
+      padding: 3px 8px;
       border-radius: 999px;
       background: rgba(15, 118, 110, 0.1);
       color: var(--accent);
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       font-weight: 600;
       border: 1px solid rgba(15, 118, 110, 0.2);
     }
@@ -249,10 +264,10 @@ export function layout(content: string, title: string = "Potato Cloud"): string 
       border-color: rgba(148, 163, 184, 0.3);
     }
     .badge {
-      padding: 6px 12px;
+      padding: 4px 10px;
       border-radius: 999px;
       font-weight: 600;
-      font-size: 0.7rem;
+      font-size: 0.65rem;
       letter-spacing: 0.08em;
       text-transform: uppercase;
     }
@@ -262,13 +277,13 @@ export function layout(content: string, title: string = "Potato Cloud"): string 
     .badge-red { background: rgba(239, 68, 68, 0.16); color: #b91c1c; }
 
     .field { display: grid; gap: 6px; }
-    .label { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.18em; color: var(--muted); }
+    .label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.18em; color: var(--muted); }
     .input, select, textarea {
       background: rgba(255, 255, 255, 0.85);
       border: 1px solid var(--panel-border);
       border-radius: var(--radius-sm);
-      padding: 8px 10px;
-      font-size: 0.9rem;
+      padding: 7px 9px;
+      font-size: 0.85rem;
       color: var(--ink);
       outline: none;
     }
@@ -276,6 +291,27 @@ export function layout(content: string, title: string = "Potato Cloud"): string 
     .input:focus, select:focus, textarea:focus { border-color: rgba(15, 118, 110, 0.6); box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.15); }
 
     .section-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--panel-border);
+      margin-bottom: 14px;
+    }
+    .section-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin: 6px 0 0;
+    }
+    .section-kicker {
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--muted);
+    }
     .card-grid { display: grid; gap: 18px; }
     .card-grid-2 { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
 
@@ -284,31 +320,83 @@ export function layout(content: string, title: string = "Potato Cloud"): string 
       border: 1px solid var(--panel-border);
       border-radius: var(--radius-lg);
       box-shadow: var(--shadow);
-      padding: 18px 20px;
+      padding: 14px 16px;
       display: grid;
-      gap: 16px;
+      gap: 12px;
       transition: transform 0.2s ease, border-color 0.2s ease;
     }
     .service-card:hover { transform: translateY(-2px); border-color: rgba(15, 118, 110, 0.35); }
-    .service-body { display: grid; gap: 16px; }
-    @media (min-width: 900px) {
-      .service-body { grid-template-columns: 1.2fr 0.8fr; align-items: start; }
-    }
     .service-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
-    .service-title { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.02em; margin: 0; }
-    .service-meta { color: var(--muted); font-size: 0.85rem; }
+    .service-title-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .service-title { font-size: 1.1rem; font-weight: 700; letter-spacing: -0.02em; margin: 0; }
+    .service-meta { color: var(--muted); font-size: 0.8rem; }
     .service-actions { display: flex; gap: 8px; }
     .service-rail { display: grid; gap: 10px; align-content: start; }
     .service-divider { height: 1px; background: var(--panel-border); }
-    .service-kv { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); }
-    .service-kv-item {
-      border: 1px solid var(--panel-border);
-      border-radius: var(--radius-md);
-      padding: 10px 12px;
-      background: rgba(148, 163, 184, 0.08);
+    .service-path {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
+      border: 1px solid rgba(15, 118, 110, 0.25);
+      background: rgba(15, 118, 110, 0.08);
     }
-    .service-kv-item span { display: block; font-size: 0.7rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); }
-    .service-kv-item strong { display: block; margin-top: 4px; font-size: 0.95rem; font-weight: 600; }
+    .service-path::before {
+      content: "path";
+      font-size: 0.6rem;
+      color: var(--muted);
+      letter-spacing: 0.2em;
+    }
+
+    .stack-hero {
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--panel-border);
+      background: linear-gradient(120deg, rgba(15, 118, 110, 0.12), rgba(245, 158, 11, 0.12)), var(--panel-strong);
+      box-shadow: var(--shadow);
+      padding: 16px 18px;
+    }
+    .stack-hero-inner {
+      display: grid;
+      gap: 16px;
+    }
+    .stack-hero-title {
+      font-size: clamp(1.6rem, 2.8vw, 2.2rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      margin: 0;
+    }
+    .stack-hero-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+    .stack-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(15, 118, 110, 0.18);
+      background: rgba(15, 118, 110, 0.08);
+      color: var(--ink);
+      font-size: 0.72rem;
+      font-weight: 600;
+    }
+    .stack-chip span { color: var(--muted); font-weight: 500; }
+    .stack-hero-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+    .stack-section { padding: 18px 20px; }
 
     .modal {
       position: fixed;
@@ -318,7 +406,7 @@ export function layout(content: string, title: string = "Potato Cloud"): string 
       z-index: 50;
       display: grid;
       place-items: center;
-      padding: 18px;
+      padding: 14px;
     }
     .modal-card {
       width: min(720px, 94vw);
@@ -360,14 +448,14 @@ export function layout(content: string, title: string = "Potato Cloud"): string 
     .modal-form { display: flex; flex-direction: column; min-height: 0; flex: 1; }
     .modal-body {
       overflow-y: auto;
-      padding: 20px 26px 26px;
+      padding: 18px 22px 22px;
       flex: 1;
       min-height: 0;
       background: transparent;
     }
     .modal-footer {
       margin-top: auto;
-      padding: 16px 26px 22px;
+      padding: 14px 22px 18px;
       border-top: 1px solid var(--panel-border);
       background: var(--panel-strong);
     }
@@ -417,7 +505,7 @@ export function layout(content: string, title: string = "Potato Cloud"): string 
         <span class="brand-badge">simple</span>
       </a>
       <div class="nav-actions">
-        <a href="/stacks" class="nav-link">Stacks</a>
+        <a href="/" class="nav-link">Stacks</a>
         <a href="/" class="nav-link">Home</a>
         <a href="/docs" class="nav-link">Docs</a>
         <button

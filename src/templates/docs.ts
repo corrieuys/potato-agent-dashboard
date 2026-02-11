@@ -11,7 +11,7 @@ export function docsPage(): string {
       and operational details for the control plane and agent.
     </p>
     <div class="docs-hero-actions">
-      <a href="/stacks" class="btn btn-primary">Open Stacks</a>
+      <a href="/" class="btn btn-primary">Open Stacks</a>
       <a href="#step-by-step-usage" class="btn btn-ghost">Get Started</a>
     </div>
   </div>

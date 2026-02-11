@@ -125,55 +125,60 @@ export function stackDetail(stack: Stack, services: Service[], agents: Agent[]):
   const agentsContent = agentsList(agents);
 
   const content = `<div class="space-y-10">
-    <section class="panel panel-strong" style="padding: 16px 20px;">
-      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-        <div class="flex items-center gap-3">
-          <h1 class="headline" style="font-size: clamp(1.6rem, 3vw, 2.2rem);">${escapeHtml(stack.name)}</h1>
+    <section class="stack-hero">
+      <div class="stack-hero-inner">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          <div>
+            <div class="kicker">Stack</div>
+            <h1 class="stack-hero-title">${escapeHtml(stack.name)}</h1>
+          </div>
+          <div class="stack-hero-actions">
+            <a href="/" class="btn btn-ghost btn-compact">Back to stacks</a>
+          </div>
         </div>
-        <div class="flex flex-wrap items-center gap-2">
-          <a href="/stacks" class="btn btn-ghost btn-xs">Back to stacks</a>
-          <span class="chip chip-muted">Poll ${stack.pollInterval}s</span>
-          <span class="chip chip-muted">${stack.securityMode}</span>
-          <span class="chip chip-muted">Proxy ${stack.externalProxyPort}</span>
+        <div class="stack-hero-meta">
+          <span class="stack-chip"><span>Poll</span> ${stack.pollInterval}s</span>
+          <span class="stack-chip"><span>Security</span> ${stack.securityMode}</span>
+          <span class="stack-chip"><span>Proxy</span> ${stack.externalProxyPort}</span>
         </div>
       </div>
     </section>
 
-    <section class="panel">
-      <div class="section-header">
+    <section class="panel stack-section">
+      <div class="section-head">
         <div>
-          <div class="kicker">Services</div>
-          <h2 class="headline text-2xl">${services.length} Active Services</h2>
+          <div class="section-kicker">Services</div>
+          <h2 class="section-title">${services.length} Active Services</h2>
         </div>
-        <a href="/stacks/${stack.id}/services/new" class="btn btn-primary">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <a href="/stacks/${stack.id}/services/new" class="btn btn-primary btn-hero">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
           </svg>
           Add Service
         </a>
       </div>
-      <div id="services-container" class="mt-6">
+      <div id="services-container">
         ${servicesContent}
       </div>
     </section>
 
-    <section class="panel">
-      <div class="section-header">
+    <section class="panel stack-section">
+      <div class="section-head">
         <div>
-          <div class="kicker">Agents</div>
-          <h2 class="headline text-2xl">${agents.length} Connected Agents</h2>
+          <div class="section-kicker">Agents</div>
+          <h2 class="section-title">${agents.length} Connected Agents</h2>
         </div>
         <button hx-get="/partials/agent-form?stackId=${stack.id}"
                 hx-target="body"
                 hx-swap="beforeend"
-                class="btn btn-primary">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                class="btn btn-primary btn-hero">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
           </svg>
           Add Agent
         </button>
       </div>
-      <div id="agents-container" class="mt-6">
+      <div id="agents-container">
         ${agentsContent}
       </div>
     </section>
