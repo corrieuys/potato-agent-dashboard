@@ -4,7 +4,7 @@ import type { Service, Stack } from "./types.js";
 
 // Create service page
 export function createServicePage(stack: Stack): string {
-  const content = `<div id="service-create-page" class="space-y-8">
+  const content = `<div id="service-create-page" class="service-page">
     <section class="panel panel-strong">
       <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
         <div>
@@ -16,7 +16,7 @@ export function createServicePage(stack: Stack): string {
       </div>
     </section>
 
-    <section class="panel" style="max-width: 1200px; margin: 0 auto;">
+    <section class="panel service-form-panel">
       <form id="service-create-form"
             action="/api/stacks/${stack.id}/services"
             method="post"
@@ -191,11 +191,24 @@ export function createServicePage(stack: Stack): string {
     </section>
 
     <style>
+      .service-page {
+        display: grid;
+        gap: 32px;
+      }
+      .service-form-panel {
+        width: 100%;
+      }
       .service-form-grid {
         display: grid;
         gap: 24px;
+        grid-template-columns: 1fr;
       }
-      .service-column { display: grid; gap: 20px; }
+      .service-column {
+        display: grid;
+        gap: 20px;
+        width: 100%;
+        grid-column: 1 / -1;
+      }
       .service-section {
         border: 1px solid var(--panel-border);
         background: var(--panel-strong);
@@ -229,7 +242,7 @@ export function createServicePage(stack: Stack): string {
         .service-field-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       }
       @media (min-width: 1024px) {
-        .service-form-grid { grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr); }
+        .service-form-grid { grid-template-columns: 1fr; }
       }
     </style>
 
@@ -285,7 +298,7 @@ export function editServicePage(stack: Stack, service: Service): string {
       : JSON.stringify(service.environmentVars, null, 2))
     : "";
 
-  const content = `<div id="service-edit-page" class="space-y-8">
+  const content = `<div id="service-edit-page" class="service-page">
     <section class="panel panel-strong">
       <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
         <div>
@@ -297,7 +310,7 @@ export function editServicePage(stack: Stack, service: Service): string {
       </div>
     </section>
 
-    <section class="panel" style="max-width: 1200px; margin: 0 auto;">
+    <section class="panel service-form-panel">
       <form id="service-edit-form"
             action="/api/stacks/${stack.id}/services/${service.id}"
             method="post"
@@ -472,11 +485,24 @@ export function editServicePage(stack: Stack, service: Service): string {
     </section>
 
     <style>
+      .service-page {
+        display: grid;
+        gap: 32px;
+      }
+      .service-form-panel {
+        width: 100%;
+      }
       .service-form-grid {
         display: grid;
         gap: 24px;
+        grid-template-columns: 1fr;
       }
-      .service-column { display: grid; gap: 20px; }
+      .service-column {
+        display: grid;
+        gap: 20px;
+        width: 100%;
+        grid-column: 1 / -1;
+      }
       .service-section {
         border: 1px solid var(--panel-border);
         background: var(--panel-strong);
@@ -510,7 +536,7 @@ export function editServicePage(stack: Stack, service: Service): string {
         .service-field-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       }
       @media (min-width: 1024px) {
-        .service-form-grid { grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr); }
+        .service-form-grid { grid-template-columns: 1fr; }
       }
     </style>
 
