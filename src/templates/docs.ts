@@ -136,6 +136,7 @@ function docsContent(): string {
         <li>Cloudflare Zero Trust → Access → Service Tokens → Create token</li>
         <li>Copy the Client ID and Client Secret</li>
         <li>Add the token to your Access policy protecting the control plane</li>
+        <li>Set the policy action to Service Auth for agent API access (Allow will redirect to login)</li>
       </ol>
       <h3>Suggested Implementation</h3>
       <ul>
