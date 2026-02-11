@@ -14,6 +14,8 @@ export function getStatusChipClass(status: string | undefined): string {
         case "running":
             return "badge-green";
         case "building":
+        case "health_check":
+        case "deploying":
             return "badge-yellow";
         case "error":
         case "crashed":
