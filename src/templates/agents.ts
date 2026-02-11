@@ -81,7 +81,7 @@ export function agentsList(agents: Agent[]): string {
         <div>
           <h4 class="headline text-xl">${escapeHtml(a.name || "Unnamed Agent")}</h4>
           <div class="subtle text-xs mono mt-1">ID: ${escapeHtml(a.id)}</div>
-          <p class="subtle mt-2">${a.lastHeartbeatAt ? new Date(a.lastHeartbeatAt).toLocaleString() : "Never connected"}</p>
+          <p class="subtle mt-2">${formatHeartbeatTimestamp(a.lastHeartbeatAt)}</p>
           ${a.heartbeatStackVersion !== undefined && a.heartbeatStackVersion !== null
       ? `<p class="subtle text-xs mt-1">Stack version: ${a.heartbeatStackVersion}</p>`
       : ""
@@ -116,6 +116,47 @@ export function agentsList(agents: Agent[]): string {
       ${renderAgentServicesStatus(a)}
     </div>
   `).join("")}</div>`;
+}
+
+function formatHeartbeatTimestamp(value: Date | string | number | null | undefined): string {
+  if (!value) {
+    return "Never connected";
+  }
+
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? "Never connected" : value.toLocaleString();
+  }
+
+  if (typeof value === "number") {
+    const millis = value < 1_000_000_000_000 ? value * 1000 : value;
+    const date = new Date(millis);
+    return Number.isNaN(date.getTime()) ? "Never connected" : date.toLocaleString();
+  }
+
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (!trimmed) {
+      return "Never connected";
+    }
+
+    const asNumber = Number(trimmed);
+    if (!Number.isNaN(asNumber)) {
+      const millis = asNumber < 1_000_000_000_000 ? asNumber * 1000 : asNumber;
+      const numericDate = new Date(millis);
+      if (!Number.isNaN(numericDate.getTime())) {
+        return numericDate.toLocaleString();
+      }
+    }
+
+    let date = new Date(trimmed);
+    if (Number.isNaN(date.getTime()) && /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(trimmed)) {
+      date = new Date(trimmed.replace(" ", "T") + "Z");
+    }
+
+    return Number.isNaN(date.getTime()) ? "Never connected" : date.toLocaleString();
+  }
+
+  return "Never connected";
 }
 
 function renderAgentServicesStatus(agent: Agent): string {
