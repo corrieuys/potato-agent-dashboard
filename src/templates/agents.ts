@@ -80,6 +80,7 @@ export function agentsList(agents: Agent[]): string {
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h4 class="headline text-xl">${escapeHtml(a.name || "Unnamed Agent")}</h4>
+          <div class="subtle text-xs mono mt-1">ID: ${escapeHtml(a.id)}</div>
           <p class="subtle mt-2">${a.lastHeartbeatAt ? new Date(a.lastHeartbeatAt).toLocaleString() : "Never connected"}</p>
         </div>
         <div class="flex items-center gap-2">
