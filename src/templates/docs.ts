@@ -2,7 +2,7 @@ import { layout } from "./layout.js";
 
 // Documentation page
 export function docsPage(): string {
-    const content = `
+  const content = `
   <div class="docs-hero panel panel-strong">
     <div class="kicker">Documentation</div>
     <h1 class="headline mt-2">Potato Cloud Guide</h1>
@@ -21,6 +21,7 @@ export function docsPage(): string {
       <div class="kicker">Contents</div>
       <nav class="docs-toc">
         <a href="#what-you-need-before-you-start">What You Need Before You Start</a>
+        <a href="#cloudflare-access-setup">Cloudflare Access Setup</a>
         <a href="#system-requirements">System Requirements</a>
         <a href="#how-the-system-works">How the System Works</a>
         <a href="#a-tour-of-the-web-interface">A Tour of the Web Interface</a>
@@ -106,11 +107,11 @@ export function docsPage(): string {
   </style>
   `;
 
-    return layout(content, "Documentation - Potato Cloud");
+  return layout(content, "Documentation - Potato Cloud");
 }
 
 function docsContent(): string {
-    return `
+  return `
     <section id="what-you-need-before-you-start" class="docs-section">
       <h2>What You Need Before You Start</h2>
       <ul>
@@ -118,12 +119,30 @@ function docsContent(): string {
         <li>A Linux server (Ubuntu or Debian recommended) where the agent will run</li>
         <li>Root or sudo access on the Linux server</li>
         <li>For private GitHub repositories: permission to add deploy keys</li>
+        <li>A Cloudflare Access service token (client ID and secret) for the agent</li>
         <li>Cloudflare Tunnel URL (optional) for HTTPS without buying SSL certificates</li>
         <li>Agent binary available for multiple architectures (ARM64 and AMD64)</li>
       </ul>
       <div class="docs-callout">
-        Note: The agent install script will automatically install Go and other dependencies if needed.
+        Note: The control plane is protected by Cloudflare Access and expects a service token on agent requests.
       </div>
+    </section>
+
+    <section id="cloudflare-access-setup" class="docs-section">
+      <h2>Cloudflare Access Setup</h2>
+      <p>Potato Cloud uses Cloudflare Access for agent authentication and recommends Cloudflare Tunnel for inbound traffic.</p>
+      <h3>Create a Service Token</h3>
+      <ol>
+        <li>Cloudflare Zero Trust → Access → Service Tokens → Create token</li>
+        <li>Copy the Client ID and Client Secret</li>
+        <li>Add the token to your Access policy protecting the control plane</li>
+      </ol>
+      <h3>Suggested Implementation</h3>
+      <ul>
+        <li>Protect the control plane with an Access app and a service-token policy</li>
+        <li>Use Cloudflare Tunnel for HTTPS ingress to services (no open inbound ports)</li>
+        <li>Rotate service tokens periodically and keep them out of logs</li>
+      </ul>
     </section>
 
     <section id="system-requirements" class="docs-section">
@@ -174,6 +193,7 @@ function docsContent(): string {
         <li>Routes incoming HTTP traffic to the correct service</li>
         <li>Provides internal DNS for service-to-service communication</li>
         <li>Sends health and status back to the dashboard</li>
+        <li>Authenticates through Cloudflare Access using a service token</li>
         <li>Securely stores secrets with AES-256-GCM encryption</li>
         <li>Rebuilds services automatically when you push to Git</li>
         <li>Handles blue-green deployments with zero downtime</li>
@@ -219,8 +239,8 @@ function docsContent(): string {
         <li>Click Save</li>
       </ol>
       <h3>Step 3: Install the Agent</h3>
-      <p>From the stack detail page, generate a token and run the install command on your server:</p>
-      <pre><code>curl -fsSL https://your-domain.com/install.sh | sudo bash -s -- --token &lt;INSTALL_TOKEN&gt; --control-plane https://your-control-plane.workers.dev</code></pre>
+      <p>From the stack detail page, generate a setup command and run it on your server:</p>
+      <pre><code>curl -fsSL https://your-domain.com/install.sh | sudo bash -s -- --agent-id &lt;AGENT_ID&gt; --stack-id &lt;STACK_ID&gt; --control-plane https://your-control-plane.workers.dev --access-client-id &lt;CF_ACCESS_CLIENT_ID&gt; --access-client-secret &lt;CF_ACCESS_CLIENT_SECRET&gt;</code></pre>
       <h3>Step 4: Verify Installation</h3>
       <pre><code>sudo potato-cloud-agent -status
 sudo journalctl -u potato-cloud-agent -f

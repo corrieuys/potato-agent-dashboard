@@ -1,8 +1,8 @@
 import { escapeHtml } from "./helpers.js";
 import type { Agent } from "./types.js";
 
-// Create agent form (for install token generation)
-export function createAgentForm(stackId: string, installToken: string, installCommand: string): string {
+// Create agent form (for setup command generation)
+export function createAgentForm(stackId: string, installCommand: string): string {
   return `<div id="create-agent-token-modal" class="modal" hx-on::click="if(event.target === this) this.remove()">
     <div class="modal-card">
       <div class="modal-body">
@@ -10,7 +10,7 @@ export function createAgentForm(stackId: string, installToken: string, installCo
         <p class="subtle">Install this agent on the server to link it to your stack.</p>
         <div class="divider"></div>
         <div class="panel panel-strong" style="padding: 18px;">
-          <p class="chip" style="margin-bottom: 10px;">Token generated</p>
+          <p class="chip" style="margin-bottom: 10px;">Setup command generated</p>
           <p class="subtle text-sm">Run this command on your Linux server:</p>
           <code class="block mono" style="margin-top: 10px; padding: 14px; border-radius: 12px; background: rgba(15, 23, 42, 0.9); color: #d1fae5; font-size: 0.78rem; overflow-x: auto;">
             ${escapeHtml(installCommand)}
@@ -34,7 +34,7 @@ export function agentNameForm(stackId: string): string {
     <div class="modal-card">
       <div class="modal-body">
         <div class="modal-title">Add New Agent</div>
-        <p class="subtle">Name it for quick recognition, then generate a one-time token.</p>
+        <p class="subtle">Name it for quick recognition, then generate a setup command.</p>
         <div class="divider"></div>
         <div id="agent-create-feedback"></div>
           <form hx-post="/api/stacks/${stackId}/agents/tokens"
@@ -57,7 +57,7 @@ export function agentNameForm(stackId: string): string {
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
               </div>
-              <button type="submit" class="btn btn-primary">Generate Token</button>
+              <button type="submit" class="btn btn-primary">Generate Command</button>
             </div>
           </div>
         </form>
@@ -71,7 +71,7 @@ export function agentsList(agents: Agent[]): string {
   if (!agents || agents.length === 0) {
     return `<div class="panel panel-strong text-center py-10">
       <p class="headline text-xl">No agents yet</p>
-      <p class="subtle mt-2">Register an agent to start syncing desired state.</p>
+      <p class="subtle mt-2">Add an agent to start syncing desired state.</p>
     </div>`;
   }
 

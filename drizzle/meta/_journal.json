@@ -36,6 +36,20 @@
       "when": 1770671184800,
       "tag": "0004_freezing_cerebro",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1770840000000,
+      "tag": "0005_align_services_for_agent",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1770838596725,
+      "tag": "0006_big_johnny_blaze",
+      "breakpoints": true
     }
   ]
 }

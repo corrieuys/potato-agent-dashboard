@@ -29,9 +29,7 @@ htmlRoutes.get("/stacks/:id", async (c) => {
 			id: services.id,
 			stackId: services.stackId,
 			name: services.name,
-			description: services.description,
 			gitUrl: services.gitUrl,
-			runtime: services.runtime,
 			port: services.port,
 			externalPath: services.externalPath,
 		})
@@ -67,8 +65,8 @@ htmlRoutes.get("/stacks/:id", async (c) => {
 				const statuses = JSON.parse(latestHeartbeat.servicesStatus as string);
 				if (Array.isArray(statuses)) {
 					for (const svcStatus of statuses) {
-						// Find service by name
-						const service = stackServices.find(s => s.name === svcStatus.name);
+						const service = stackServices.find(s => s.id === svcStatus.service_id)
+							|| stackServices.find(s => s.name === svcStatus.name);
 						if (service) {
 							// Only update if we don't have a status yet, or if this is more recent
 							if (!serviceStatuses[service.id]) {
@@ -176,7 +174,6 @@ htmlRoutes.get("/stacks/:id/services/:serviceId/edit", async (c) => {
 			id: services.id,
 			stackId: services.stackId,
 			name: services.name,
-			description: services.description,
 			gitUrl: services.gitUrl,
 			gitRef: services.gitRef,
 			gitCommit: services.gitCommit,
@@ -188,6 +185,8 @@ htmlRoutes.get("/stacks/:id/services/:serviceId/edit", async (c) => {
 			dockerContext: services.dockerContext,
 			dockerContainerPort: services.dockerContainerPort,
 			imageRetainCount: services.imageRetainCount,
+			baseImage: services.baseImage,
+			language: services.language,
 			port: services.port,
 			externalPath: services.externalPath,
 			healthCheckPath: services.healthCheckPath,

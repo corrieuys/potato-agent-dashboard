@@ -2,29 +2,27 @@ import { Hono } from "hono";
 import { eq, and, asc } from "drizzle-orm";
 import { createClient } from "../db/client";
 import { stacks, agents, services, serviceVersions } from "../db/schema";
-import { computeHash, hashSecret } from "../lib/utils";
+import { computeHash } from "../lib/utils";
 
 const desiredStateRoutes = new Hono<{ Bindings: CloudflareBindings }>();
 
-// Get desired state for a stack (authenticated by API key)
+// Get desired state for a stack (authenticated by agent ID)
 desiredStateRoutes.get("/", async (c) => {
 	const stackId = c.req.param("stackId");
-	const apiKey = c.req.header("X-API-Key");
+	const agentId = c.req.header("X-Agent-Id");
 
-	if (!apiKey) {
-		return c.json({ error: "API key required" }, 401);
+	if (!agentId) {
+		return c.json({ error: "Agent ID required" }, 401);
 	}
 
 	const db = createClient(c.env.DB);
-	const apiKeyHash = await hashSecret(apiKey);
-
 	const [agent] = await db
 		.select()
 		.from(agents)
-		.where(and(eq(agents.stackId, stackId), eq(agents.apiKey, apiKeyHash)));
+		.where(and(eq(agents.stackId, stackId), eq(agents.id, agentId)));
 
 	if (!agent) {
-		return c.json({ error: "Invalid API key" }, 401);
+		return c.json({ error: "Invalid agent" }, 401);
 	}
 
 	const [stack] = await db
@@ -69,6 +67,19 @@ desiredStateRoutes.get("/", async (c) => {
 		security_mode: stack.securityMode,
 		external_proxy_port: stack.externalProxyPort,
 		services: stackServices.map((s) => {
+			let environmentVars: Record<string, string> = {};
+			if (s.environmentVars) {
+				if (typeof s.environmentVars === "string") {
+					try {
+						environmentVars = JSON.parse(s.environmentVars);
+					} catch (error) {
+						environmentVars = {};
+					}
+				} else {
+					environmentVars = s.environmentVars as Record<string, string>;
+				}
+			}
+
 			const serviceData: any = {
 				id: s.id,
 				name: s.name,
@@ -78,16 +89,18 @@ desiredStateRoutes.get("/", async (c) => {
 				git_ssh_key: s.gitSshKey || "",
 				build_command: s.buildCommand,
 				run_command: s.runCommand,
-				runtime: s.runtime || "process",
-				dockerfile_path: s.dockerfilePath || "Dockerfile",
-				docker_context: s.dockerContext || ".",
+				runtime: s.runtime || "",
+				dockerfile_path: s.dockerfilePath || "",
+				docker_context: s.dockerContext || "",
 				docker_container_port: s.dockerContainerPort || 0,
-				image_retain_count: s.imageRetainCount || 5,
+				image_retain_count: s.imageRetainCount || 0,
+				base_image: s.baseImage || "",
+				language: s.language || "auto",
 				port: s.port,
 				external_path: s.externalPath,
 				health_check_path: s.healthCheckPath,
 				health_check_interval: s.healthCheckInterval,
-				environment_vars: s.environmentVars || {},
+				environment_vars: environmentVars,
 			};
 
 			// Add blue-green deployment info if enabled

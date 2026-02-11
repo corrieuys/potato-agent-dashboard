@@ -26,14 +26,30 @@ servicesRoutes.post("/", async (c) => {
 	const body = await parseBody(c);
 	const db = createClient(c.env.DB);
 
-	if (!body.name || !body.git_url || !body.run_command || !body.port) {
+	if (!body.name || !body.git_url || !body.port || !body.build_command || !body.run_command) {
 		if (wantsHTML(c)) {
-			return c.html(`<div class="text-red-600 p-4">Missing required fields: name, git_url, run_command, port</div>`, 400);
+			return c.html(`<div class="text-red-600 p-4">Missing required fields: name, git_url, port, build_command, run_command</div>`, 400);
 		}
 		return c.json(
-			{ error: "Missing required fields: name, git_url, run_command, port" },
+			{ error: "Missing required fields: name, git_url, port, build_command, run_command" },
 			400
 		);
+	}
+
+	let environmentVars: Record<string, string> | null = null;
+	if (body.environment_vars) {
+		if (typeof body.environment_vars === "string") {
+			try {
+				environmentVars = JSON.parse(body.environment_vars);
+			} catch (error) {
+				if (wantsHTML(c)) {
+					return c.html(`<div class="text-red-600 p-4">Environment vars must be valid JSON</div>`, 400);
+				}
+				return c.json({ error: "Environment vars must be valid JSON" }, 400);
+			}
+		} else {
+			environmentVars = body.environment_vars as Record<string, string>;
+		}
 	}
 
 	const [stack] = await db.select().from(stacks).where(eq(stacks.id, stackId));
@@ -65,23 +81,24 @@ servicesRoutes.post("/", async (c) => {
 		id,
 		stackId,
 		name: body.name,
-		description: body.description || null,
 		gitUrl: body.git_url,
 		gitRef: body.git_ref || "main",
 		gitCommit: body.git_commit || null,
 		gitSshKey: body.git_ssh_key || null,
-		buildCommand: body.build_command || null,
+		buildCommand: body.build_command,
 		runCommand: body.run_command,
-		runtime: body.runtime || "process",
-		dockerfilePath: body.dockerfile_path || "Dockerfile",
-		dockerContext: body.docker_context || ".",
+		runtime: body.runtime || null,
+		dockerfilePath: body.dockerfile_path || null,
+		dockerContext: body.docker_context || null,
 		dockerContainerPort: body.docker_container_port ? parseInt(body.docker_container_port) : null,
-		imageRetainCount: body.image_retain_count ? parseInt(body.image_retain_count) : 5,
+		imageRetainCount: body.image_retain_count ? parseInt(body.image_retain_count) : null,
+		baseImage: body.base_image || null,
+		language: body.language || "auto",
 		port: parseInt(body.port),
 		externalPath: body.external_path || null,
 		healthCheckPath: body.health_check_path || "/health",
 		healthCheckInterval: body.health_check_interval ? parseInt(body.health_check_interval) : 30,
-		environmentVars: body.environment_vars || null,
+		environmentVars,
 	});
 
 	await db
@@ -133,27 +150,23 @@ servicesRoutes.patch("/:serviceId", async (c) => {
 	};
 
 	if (body.name !== undefined) updates.name = body.name;
-	if (body.description !== undefined) updates.description = body.description;
 	if (body.git_url !== undefined) updates.gitUrl = body.git_url;
 	if (body.git_ref !== undefined) updates.gitRef = body.git_ref;
 	if (body.git_commit !== undefined) updates.gitCommit = body.git_commit;
 	if (body.git_ssh_key !== undefined) updates.gitSshKey = body.git_ssh_key;
-	if (body.build_command !== undefined)
-		updates.buildCommand = body.build_command;
+	if (body.build_command !== undefined) updates.buildCommand = body.build_command;
 	if (body.run_command !== undefined) updates.runCommand = body.run_command;
-	if (body.runtime !== undefined) updates.runtime = body.runtime;
+	if (body.runtime !== undefined) updates.runtime = body.runtime || null;
 	if (body.dockerfile_path !== undefined)
-		updates.dockerfilePath = body.dockerfile_path;
+		updates.dockerfilePath = body.dockerfile_path || null;
 	if (body.docker_context !== undefined)
-		updates.dockerContext = body.docker_context;
+		updates.dockerContext = body.docker_context || null;
 	if (body.docker_container_port !== undefined)
-		updates.dockerContainerPort = body.docker_container_port
-			? parseInt(body.docker_container_port)
-			: null;
+		updates.dockerContainerPort = body.docker_container_port ? parseInt(body.docker_container_port) : null;
 	if (body.image_retain_count !== undefined)
-		updates.imageRetainCount = body.image_retain_count
-			? parseInt(body.image_retain_count)
-			: 5;
+		updates.imageRetainCount = body.image_retain_count ? parseInt(body.image_retain_count) : null;
+	if (body.base_image !== undefined) updates.baseImage = body.base_image || null;
+	if (body.language !== undefined) updates.language = body.language || "auto";
 	if (body.port !== undefined) updates.port = parseInt(body.port);
 	if (body.external_path !== undefined)
 		updates.externalPath = body.external_path;
@@ -161,8 +174,22 @@ servicesRoutes.patch("/:serviceId", async (c) => {
 		updates.healthCheckPath = body.health_check_path;
 	if (body.health_check_interval !== undefined)
 		updates.healthCheckInterval = parseInt(body.health_check_interval);
-	if (body.environment_vars !== undefined)
-		updates.environmentVars = body.environment_vars;
+	if (body.environment_vars !== undefined) {
+		if (!body.environment_vars) {
+			updates.environmentVars = null;
+		} else if (typeof body.environment_vars === "string") {
+			try {
+				updates.environmentVars = JSON.parse(body.environment_vars);
+			} catch (error) {
+				if (wantsHTML(c)) {
+					return c.html(`<div class="text-red-600 p-4">Environment vars must be valid JSON</div>`, 400);
+				}
+				return c.json({ error: "Environment vars must be valid JSON" }, 400);
+			}
+		} else {
+			updates.environmentVars = body.environment_vars as Record<string, string>;
+		}
+	}
 
 	await db.update(services).set(updates).where(eq(services.id, serviceId));
 

@@ -10,21 +10,29 @@ export interface AgentNotificationPayload {
   commit_ref?: string;
 }
 
+export interface AccessHeaderConfig {
+  accessClientId?: string;
+  accessClientSecret?: string;
+}
+
 /**
  * Notify a specific agent about configuration changes
  */
 export async function notifyAgent(
   agentEndpoint: string,
   payload: AgentNotificationPayload,
-  apiKey?: string
+  access?: AccessHeaderConfig
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     };
 
-    if (apiKey) {
-      headers['Authorization'] = `Bearer ${apiKey}`;
+    if (access?.accessClientId) {
+      headers['CF-Access-Client-Id'] = access.accessClientId;
+    }
+    if (access?.accessClientSecret) {
+      headers['CF-Access-Client-Secret'] = access.accessClientSecret;
     }
 
     const response = await fetch(`${agentEndpoint}/api/internal/notify-config-change`, {
@@ -56,7 +64,7 @@ export async function notifyStackAgents(
   db: any,
   stackId: string,
   payload: Omit<AgentNotificationPayload, 'stack_id'>,
-  apiKey?: string
+  access?: AccessHeaderConfig
 ): Promise<{ notified: number; failed: number; errors: string[] }> {
   const { eq } = await import('drizzle-orm');
   const { agents } = await import('../db/schema');
@@ -84,7 +92,7 @@ export async function notifyStackAgents(
     const result = await notifyAgent(
       agent.agentEndpoint,
       { ...payload, stack_id: stackId },
-      apiKey
+      access
     );
 
     if (result.success) {

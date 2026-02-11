@@ -10,7 +10,7 @@ export function createServicePage(stack: Stack): string {
         <div>
           <div class="kicker">Stack: ${escapeHtml(stack.name)}</div>
           <h1 class="headline mt-2">Create Service</h1>
-          <p class="subtle mt-2">Define the repo, runtime, and routing in one clear flow.</p>
+          <p class="subtle mt-2">Define the repo, language, and routing for auto-built Docker images.</p>
         </div>
         <a href="/stacks/${stack.id}" class="btn btn-ghost">Back to stack</a>
       </div>
@@ -33,7 +33,7 @@ export function createServicePage(stack: Stack): string {
             <div class="service-section">
               <div class="service-section-header">
                 <h3>Identity</h3>
-                <p>Name it so the dashboard and logs read clearly.</p>
+                <p>Name it and decide how it is exposed.</p>
               </div>
               <div class="service-field-row">
                 <div class="field">
@@ -43,10 +43,6 @@ export function createServicePage(stack: Stack): string {
                 <div class="field">
                   <label class="label" for="service-external-path">External Path</label>
                   <input type="text" id="service-external-path" name="external_path" placeholder="/api" class="input">
-                </div>
-                <div class="field span-2">
-                  <label class="label" for="service-description">Description</label>
-                  <textarea id="service-description" name="description" rows="3" class="input" placeholder="What does this service do?"></textarea>
                 </div>
               </div>
             </div>
@@ -80,39 +76,45 @@ export function createServicePage(stack: Stack): string {
             <div class="service-section">
               <div class="service-section-header">
                 <h3>Build & Run</h3>
-                <p>Define how the service is built and launched.</p>
+                <p>Provide the exact commands to build and start your app.</p>
               </div>
               <div class="service-field-row">
                 <div class="field span-2">
-                  <label class="label" for="service-build-command">Build Command</label>
-                  <input type="text" id="service-build-command" name="build_command" placeholder="npm install && npm run build" class="input">
+                  <label class="label" for="service-build-command">Build Command *</label>
+                  <input type="text" id="service-build-command" name="build_command" required placeholder="npm run build" class="input">
                 </div>
                 <div class="field span-2">
-                  <label class="label" for="service-run-command" data-run-label>Run Command *</label>
-                  <input type="text" id="service-run-command" name="run_command" required placeholder="npm start" data-run-input class="input">
-                  <p class="subtle text-xs" data-run-help>For docker, this becomes extra docker run arguments.</p>
+                  <label class="label" for="service-run-command">Run Command *</label>
+                  <input type="text" id="service-run-command" name="run_command" required placeholder="npm start" class="input">
                 </div>
               </div>
             </div>
-          </div>
 
-          <div class="service-column">
             <div class="service-section">
               <div class="service-section-header">
-                <h3>Runtime & Routing</h3>
-                <p>How the service is exposed and monitored.</p>
+                <h3>Runtime</h3>
+                <p>Docker builds are automatic. Pick a language or let it auto-detect.</p>
               </div>
               <div class="service-field-row">
                 <div class="field">
-                  <label class="label" for="service-runtime">Runtime</label>
-                  <select id="service-runtime" name="runtime" data-runtime-select class="input">
-                    <option value="process" selected>process</option>
-                    <option value="docker">docker</option>
+                  <label class="label" for="service-language">Language</label>
+                  <select id="service-language" name="language" class="input">
+                    <option value="auto" selected>auto</option>
+                    <option value="nodejs">nodejs</option>
+                    <option value="golang">golang</option>
+                    <option value="python">python</option>
+                    <option value="rust">rust</option>
+                    <option value="java">java</option>
+                    <option value="generic">generic</option>
                   </select>
                 </div>
                 <div class="field">
-                  <label class="label" for="service-port">Service Port *</label>
-                  <input type="number" id="service-port" name="port" required value="3000" min="1" max="65535" class="input">
+                  <label class="label" for="service-base-image">Base Image (optional)</label>
+                  <input type="text" id="service-base-image" name="base_image" placeholder="node:20-alpine" class="input">
+                </div>
+                <div class="field">
+                  <label class="label" for="service-port">App Port *</label>
+                  <input type="number" id="service-port" name="port" required value="8000" min="1" max="65535" class="input">
                 </div>
                 <div class="field">
                   <label class="label" for="service-health-path">Health Check Path</label>
@@ -125,31 +127,37 @@ export function createServicePage(stack: Stack): string {
               </div>
             </div>
 
-            <div class="service-section" data-docker-only>
-              <div class="service-section-header">
-                <h3>Docker Settings</h3>
-                <p>Only required when running in Docker mode.</p>
+            <details class="service-section">
+              <summary class="service-section-summary">Advanced Docker Options</summary>
+              <div class="service-section-body">
+                <div class="service-section-header">
+                  <h3>Docker</h3>
+                  <p>Optional overrides for Docker build and runtime.</p>
+                </div>
+                <div class="service-field-row">
+                  <div class="field">
+                    <label class="label" for="service-runtime">Runtime</label>
+                    <input type="text" id="service-runtime" name="runtime" placeholder="docker" class="input">
+                  </div>
+                  <div class="field">
+                    <label class="label" for="service-dockerfile-path">Dockerfile Path</label>
+                    <input type="text" id="service-dockerfile-path" name="dockerfile_path" placeholder="Dockerfile" class="input">
+                  </div>
+                  <div class="field">
+                    <label class="label" for="service-docker-context">Docker Context</label>
+                    <input type="text" id="service-docker-context" name="docker_context" placeholder="." class="input">
+                  </div>
+                  <div class="field">
+                    <label class="label" for="service-docker-container-port">Container Port</label>
+                    <input type="number" id="service-docker-container-port" name="docker_container_port" min="1" max="65535" class="input">
+                  </div>
+                  <div class="field">
+                    <label class="label" for="service-image-retain-count">Image Retain Count</label>
+                    <input type="number" id="service-image-retain-count" name="image_retain_count" min="1" max="100" class="input">
+                  </div>
+                </div>
               </div>
-              <div class="service-field-row">
-                <div class="field">
-                  <label class="label" for="service-docker-container-port">Container Port</label>
-                  <input type="number" id="service-docker-container-port" name="docker_container_port" placeholder="3000" min="1" max="65535" class="input">
-                </div>
-                <div class="field">
-                  <label class="label" for="service-image-retain-count">Image Retain Count</label>
-                  <input type="number" id="service-image-retain-count" name="image_retain_count" value="5" min="1" max="50" class="input">
-                </div>
-                <div class="field">
-                  <label class="label" for="service-dockerfile-path">Dockerfile Path</label>
-                  <input type="text" id="service-dockerfile-path" name="dockerfile_path" value="Dockerfile" class="input">
-                </div>
-                <div class="field">
-                  <label class="label" for="service-docker-context">Docker Context</label>
-                  <input type="text" id="service-docker-context" name="docker_context" value="." class="input">
-                </div>
-              </div>
-              <p class="subtle text-xs">Container port maps to the external proxy port.</p>
-            </div>
+            </details>
 
             <div class="service-section">
               <div class="service-section-header">
@@ -205,6 +213,13 @@ export function createServicePage(stack: Stack): string {
         color: var(--muted);
         font-size: 0.85rem;
       }
+      .service-section-summary {
+        cursor: pointer;
+        font-weight: 600;
+        list-style: none;
+      }
+      .service-section-summary::-webkit-details-marker { display: none; }
+      .service-section-body { margin-top: 12px; display: grid; gap: 14px; }
       .service-field-row {
         display: grid;
         gap: 12px;
@@ -218,32 +233,6 @@ export function createServicePage(stack: Stack): string {
       }
     </style>
 
-    <script>
-      (function() {
-        const page = document.getElementById("service-create-page");
-        if (!page) return;
-        const runtime = page.querySelector("[data-runtime-select]");
-        const dockerOnly = page.querySelectorAll("[data-docker-only]");
-        const runLabel = page.querySelector("[data-run-label]");
-        const runHelp = page.querySelector("[data-run-help]");
-        const runInput = page.querySelector("[data-run-input]");
-
-        function applyRuntime() {
-          const isDocker = runtime && runtime.value === "docker";
-          dockerOnly.forEach((el) => {
-            el.classList.toggle("hidden", !isDocker);
-          });
-          if (runLabel) runLabel.textContent = isDocker ? "Docker Run Args" : "Run Command *";
-          if (runInput) runInput.placeholder = isDocker ? "-v /data:/data --env NODE_ENV=production" : "npm start";
-          if (runHelp) runHelp.classList.toggle("hidden", !isDocker);
-        }
-
-        if (runtime) {
-          runtime.addEventListener("change", applyRuntime);
-        }
-        applyRuntime();
-      })();
-    </script>
   </div>`;
 
   return layout(content, `Add Service - ${escapeHtml(stack.name)}`);
@@ -267,7 +256,6 @@ export function servicesList(services: Service[]): string {
             ${s.externalPath ? `<span class="service-path">${escapeHtml(s.externalPath)}</span>` : ""}
           </div>
           <div class="service-meta mono">${escapeHtml(s.gitUrl)}</div>
-          ${s.description ? `<div class="subtle" style="margin-top: 6px;">${escapeHtml(s.description)}</div>` : ""}
         </div>
         <div class="service-actions">
           <a href="/stacks/${s.stackId}/services/${s.id}/edit" class="btn btn-ghost btn-compact">Edit</a>
@@ -303,7 +291,7 @@ export function editServicePage(stack: Stack, service: Service): string {
         <div>
           <div class="kicker">Stack: ${escapeHtml(stack.name)}</div>
           <h1 class="headline mt-2">Edit ${escapeHtml(service.name)}</h1>
-          <p class="subtle mt-2">Update the service configuration without losing context.</p>
+          <p class="subtle mt-2">Update the repo, language, and routing details.</p>
         </div>
         <a href="/stacks/${stack.id}" class="btn btn-ghost">Back to stack</a>
       </div>
@@ -326,7 +314,7 @@ export function editServicePage(stack: Stack, service: Service): string {
             <div class="service-section">
               <div class="service-section-header">
                 <h3>Identity</h3>
-                <p>Name and describe the service for quick scans.</p>
+                <p>Name it and decide how it is exposed.</p>
               </div>
               <div class="service-field-row">
                 <div class="field">
@@ -336,10 +324,6 @@ export function editServicePage(stack: Stack, service: Service): string {
                 <div class="field">
                   <label class="label" for="edit-service-external-path">External Path</label>
                   <input type="text" id="edit-service-external-path" name="external_path" value="${escapeHtml(service.externalPath || "")}" class="input">
-                </div>
-                <div class="field span-2">
-                  <label class="label" for="edit-service-description">Description</label>
-                  <textarea id="edit-service-description" name="description" rows="3" class="input">${escapeHtml(service.description || "")}</textarea>
                 </div>
               </div>
             </div>
@@ -373,38 +357,44 @@ export function editServicePage(stack: Stack, service: Service): string {
             <div class="service-section">
               <div class="service-section-header">
                 <h3>Build & Run</h3>
-                <p>Commands that build and start the service.</p>
+                <p>Provide the exact commands to build and start your app.</p>
               </div>
               <div class="service-field-row">
                 <div class="field span-2">
-                  <label class="label" for="edit-service-build-command">Build Command</label>
-                  <input type="text" id="edit-service-build-command" name="build_command" value="${escapeHtml(service.buildCommand || "")}" class="input">
+                  <label class="label" for="edit-service-build-command">Build Command *</label>
+                  <input type="text" id="edit-service-build-command" name="build_command" required value="${escapeHtml(service.buildCommand)}" class="input">
                 </div>
                 <div class="field span-2">
-                  <label class="label" for="edit-service-run-command" data-run-label>Run Command *</label>
-                  <input type="text" id="edit-service-run-command" name="run_command" required value="${escapeHtml(service.runCommand || "")}" data-run-input class="input">
-                  <p class="subtle text-xs" data-run-help>For docker, this becomes extra docker run arguments.</p>
+                  <label class="label" for="edit-service-run-command">Run Command *</label>
+                  <input type="text" id="edit-service-run-command" name="run_command" required value="${escapeHtml(service.runCommand)}" class="input">
                 </div>
               </div>
             </div>
-          </div>
 
-          <div class="service-column">
             <div class="service-section">
               <div class="service-section-header">
-                <h3>Runtime & Routing</h3>
-                <p>Ports, health checks, and runtime selection.</p>
+                <h3>Runtime</h3>
+                <p>Docker builds are automatic. Pick a language or let it auto-detect.</p>
               </div>
               <div class="service-field-row">
                 <div class="field">
-                  <label class="label" for="edit-service-runtime">Runtime</label>
-                  <select id="edit-service-runtime" name="runtime" data-runtime-select class="input">
-                    <option value="process" ${service.runtime === "process" ? "selected" : ""}>process</option>
-                    <option value="docker" ${service.runtime === "docker" ? "selected" : ""}>docker</option>
+                  <label class="label" for="edit-service-language">Language</label>
+                  <select id="edit-service-language" name="language" class="input">
+                    <option value="auto" ${service.language === "auto" ? "selected" : ""}>auto</option>
+                    <option value="nodejs" ${service.language === "nodejs" ? "selected" : ""}>nodejs</option>
+                    <option value="golang" ${service.language === "golang" ? "selected" : ""}>golang</option>
+                    <option value="python" ${service.language === "python" ? "selected" : ""}>python</option>
+                    <option value="rust" ${service.language === "rust" ? "selected" : ""}>rust</option>
+                    <option value="java" ${service.language === "java" ? "selected" : ""}>java</option>
+                    <option value="generic" ${service.language === "generic" ? "selected" : ""}>generic</option>
                   </select>
                 </div>
                 <div class="field">
-                  <label class="label" for="edit-service-port">Service Port *</label>
+                  <label class="label" for="edit-service-base-image">Base Image (optional)</label>
+                  <input type="text" id="edit-service-base-image" name="base_image" value="${escapeHtml(service.baseImage || "")}" class="input">
+                </div>
+                <div class="field">
+                  <label class="label" for="edit-service-port">App Port *</label>
                   <input type="number" id="edit-service-port" name="port" required value="${service.port}" min="1" max="65535" class="input">
                 </div>
                 <div class="field">
@@ -418,31 +408,37 @@ export function editServicePage(stack: Stack, service: Service): string {
               </div>
             </div>
 
-            <div class="service-section" data-docker-only>
-              <div class="service-section-header">
-                <h3>Docker Settings</h3>
-                <p>Only required when running in Docker mode.</p>
+            <details class="service-section">
+              <summary class="service-section-summary">Advanced Docker Options</summary>
+              <div class="service-section-body">
+                <div class="service-section-header">
+                  <h3>Docker</h3>
+                  <p>Optional overrides for Docker build and runtime.</p>
+                </div>
+                <div class="service-field-row">
+                  <div class="field">
+                    <label class="label" for="edit-service-runtime">Runtime</label>
+                    <input type="text" id="edit-service-runtime" name="runtime" value="${escapeHtml(service.runtime || "")}" class="input">
+                  </div>
+                  <div class="field">
+                    <label class="label" for="edit-service-dockerfile-path">Dockerfile Path</label>
+                    <input type="text" id="edit-service-dockerfile-path" name="dockerfile_path" value="${escapeHtml(service.dockerfilePath || "")}" class="input">
+                  </div>
+                  <div class="field">
+                    <label class="label" for="edit-service-docker-context">Docker Context</label>
+                    <input type="text" id="edit-service-docker-context" name="docker_context" value="${escapeHtml(service.dockerContext || "")}" class="input">
+                  </div>
+                  <div class="field">
+                    <label class="label" for="edit-service-docker-container-port">Container Port</label>
+                    <input type="number" id="edit-service-docker-container-port" name="docker_container_port" value="${service.dockerContainerPort || ""}" min="1" max="65535" class="input">
+                  </div>
+                  <div class="field">
+                    <label class="label" for="edit-service-image-retain-count">Image Retain Count</label>
+                    <input type="number" id="edit-service-image-retain-count" name="image_retain_count" value="${service.imageRetainCount || ""}" min="1" max="100" class="input">
+                  </div>
+                </div>
               </div>
-              <div class="service-field-row">
-                <div class="field">
-                  <label class="label" for="edit-service-docker-container-port">Container Port</label>
-                  <input type="number" id="edit-service-docker-container-port" name="docker_container_port" value="${service.dockerContainerPort || ""}" min="1" max="65535" class="input">
-                </div>
-                <div class="field">
-                  <label class="label" for="edit-service-image-retain-count">Image Retain Count</label>
-                  <input type="number" id="edit-service-image-retain-count" name="image_retain_count" value="${service.imageRetainCount || 5}" min="1" max="50" class="input">
-                </div>
-                <div class="field">
-                  <label class="label" for="edit-service-dockerfile-path">Dockerfile Path</label>
-                  <input type="text" id="edit-service-dockerfile-path" name="dockerfile_path" value="${escapeHtml(service.dockerfilePath || "Dockerfile")}" class="input">
-                </div>
-                <div class="field">
-                  <label class="label" for="edit-service-docker-context">Docker Context</label>
-                  <input type="text" id="edit-service-docker-context" name="docker_context" value="${escapeHtml(service.dockerContext || ".")}" class="input">
-                </div>
-              </div>
-              <p class="subtle text-xs">Container port maps to the external proxy port.</p>
-            </div>
+            </details>
 
             <div class="service-section">
               <div class="service-section-header">
@@ -498,6 +494,13 @@ export function editServicePage(stack: Stack, service: Service): string {
         color: var(--muted);
         font-size: 0.85rem;
       }
+      .service-section-summary {
+        cursor: pointer;
+        font-weight: 600;
+        list-style: none;
+      }
+      .service-section-summary::-webkit-details-marker { display: none; }
+      .service-section-body { margin-top: 12px; display: grid; gap: 14px; }
       .service-field-row {
         display: grid;
         gap: 12px;
@@ -511,32 +514,6 @@ export function editServicePage(stack: Stack, service: Service): string {
       }
     </style>
 
-    <script>
-      (function() {
-        const page = document.getElementById("service-edit-page");
-        if (!page) return;
-        const runtime = page.querySelector("[data-runtime-select]");
-        const dockerOnly = page.querySelectorAll("[data-docker-only]");
-        const runLabel = page.querySelector("[data-run-label]");
-        const runHelp = page.querySelector("[data-run-help]");
-        const runInput = page.querySelector("[data-run-input]");
-
-        function applyRuntime() {
-          const isDocker = runtime && runtime.value === "docker";
-          dockerOnly.forEach((el) => {
-            el.classList.toggle("hidden", !isDocker);
-          });
-          if (runLabel) runLabel.textContent = isDocker ? "Docker Run Args" : "Run Command *";
-          if (runInput) runInput.placeholder = isDocker ? "-v /data:/data --env NODE_ENV=production" : "npm start";
-          if (runHelp) runHelp.classList.toggle("hidden", !isDocker);
-        }
-
-        if (runtime) {
-          runtime.addEventListener("change", applyRuntime);
-        }
-        applyRuntime();
-      })();
-    </script>
   </div>`;
 
   return layout(content, `Edit Service - ${escapeHtml(stack.name)}`);

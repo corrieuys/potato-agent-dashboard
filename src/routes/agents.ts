@@ -3,7 +3,7 @@ import { eq, and, desc, sql } from "drizzle-orm";
 import { createClient } from "../db/client";
 import { stacks, agents } from "../db/schema";
 import * as templates from "../templates";
-import { generateUUID, generateToken, wantsHTML, parseBody, hashSecret } from "../lib/utils";
+import { generateUUID, wantsHTML, parseBody } from "../lib/utils";
 
 const agentsRoutes = new Hono<{ Bindings: CloudflareBindings }>();
 
@@ -26,7 +26,7 @@ agentsRoutes.get("/", async (c) => {
 	return c.json({ agents: stackAgents });
 });
 
-// Generate install token for a new agent
+// Generate agent setup command
 agentsRoutes.post("/tokens", async (c) => {
 	const stackId = c.req.param("stackId");
 	const body = await parseBody(c);
@@ -41,24 +41,21 @@ agentsRoutes.post("/tokens", async (c) => {
 	}
 
 	const id = generateUUID();
-	const installToken = generateToken(32);
-	const installCommand = `curl -fsSL https://potatocloud.space/install.sh | sudo bash -s -- --token ${installToken} --stack-id ${stackId} --control-plane https://your-control-plane.workers.dev`;
+	const installCommand = `curl -fsSL https://potatocloud.space/install.sh | sudo bash -s -- --agent-id ${id} --stack-id ${stackId} --control-plane https://your-control-plane.workers.dev --access-client-id <CF_ACCESS_CLIENT_ID> --access-client-secret <CF_ACCESS_CLIENT_SECRET>`;
 
 	await db.insert(agents).values({
 		id,
 		stackId,
 		name: body.name || null,
-		installToken,
 		status: "pending",
 	});
 
 	if (wantsHTML(c)) {
-		return c.html(templates.createAgentForm(stackId, installToken, installCommand));
+		return c.html(templates.createAgentForm(stackId, installCommand));
 	}
 
 	return c.json({
 		agent_id: id,
-		install_token: installToken,
 		install_command: installCommand,
 	}, 201);
 });
@@ -168,7 +165,10 @@ agentsRoutes.post("/:agentId/trigger-refresh", async (c) => {
 			changed_at: new Date().toISOString(),
 			change_type: "manual_trigger",
 		},
-		undefined
+		{
+			accessClientId: c.env.CF_ACCESS_CLIENT_ID,
+			accessClientSecret: c.env.CF_ACCESS_CLIENT_SECRET,
+		}
 	);
 
 	if (!result.success) {
@@ -176,54 +176,6 @@ agentsRoutes.post("/:agentId/trigger-refresh", async (c) => {
 	}
 
 	return c.json({ success: true, message: "Agent notified successfully" });
-});
-
-// Agent registration (exchange install token for API key)
-agentsRoutes.post("/register", async (c) => {
-	const body = await c.req.json();
-	const { install_token, hostname, ip_address } = body;
-
-	if (!install_token) {
-		return c.json({ error: "Install token required" }, 400);
-	}
-
-	const db = createClient(c.env.DB);
-
-	const [agent] = await db
-		.select()
-		.from(agents)
-		.where(eq(agents.installToken, install_token));
-
-	if (!agent) {
-		return c.json({ error: "Invalid install token" }, 401);
-	}
-
-	const apiKey = generateToken(48);
-	const apiKeyHash = await hashSecret(apiKey);
-
-	await db
-		.update(agents)
-		.set({
-			apiKey: apiKeyHash,
-			installToken: null,
-			hostname: hostname || null,
-			ipAddress: ip_address || null,
-			status: "online",
-			updatedAt: sql`CURRENT_TIMESTAMP`,
-		})
-		.where(eq(agents.id, agent.id));
-
-	const [stack] = await db
-		.select()
-		.from(stacks)
-		.where(eq(stacks.id, agent.stackId));
-
-	return c.json({
-		agent_id: agent.id,
-		api_key: apiKey,
-		stack_id: agent.stackId,
-		poll_interval: stack?.pollInterval || 30,
-	});
 });
 
 export default agentsRoutes;

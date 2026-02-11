@@ -33,10 +33,24 @@ Potato Cloud is a lightweight platform that lets you deploy services from Git re
 - A Linux server (Ubuntu/Debian recommended) where the agent will run
 - Root/sudo access on the Linux server
 - For private GitHub repositories: permission to add deploy keys
+- A Cloudflare Access service token (client ID and secret) for the agent
 - Cloudflare Tunnel URL (optional) for HTTPS without buying SSL certificates
 - Agent binary available for multiple architectures (ARM64/AMD64)
 
 **Note:** The agent install script will automatically install Go and other dependencies if needed. Agent binary available for ARM64 and AMD64 architectures.
+
+## Cloudflare Access Setup
+
+Potato Cloud uses Cloudflare Access for agent authentication and recommends Cloudflare Tunnel for inbound traffic.
+
+1. Cloudflare Zero Trust → Access → Service Tokens → Create token
+2. Add the token to the Access policy protecting the control plane
+3. Copy the Client ID and Client Secret for use in the agent setup command
+
+Suggested implementation:
+- Protect the control plane with an Access app and a service-token policy
+- Use Cloudflare Tunnel for HTTPS ingress to services (no open inbound ports)
+- Rotate service tokens periodically and keep them out of logs
 
 ## System Requirements
 
@@ -79,6 +93,7 @@ Potato Cloud runs on your own infrastructure in two main parts:
     - Routes incoming HTTP traffic to the correct service
     - Provides internal DNS for service-to-service communication
     - Sends health and status back to the dashboard
+   - Authenticates to the control plane through Cloudflare Access
     - Securely stores secrets with AES-256-GCM encryption
     - Runs on Raspberry Pi, old laptops, VPS, or any Linux machine
     - Rebuilds services automatically when you push to Git
@@ -113,9 +128,9 @@ The **Stack Detail** page is your main workspace:
   - Name and status (online/offline)
   - Last heartbeat time
   - Action buttons: Edit, Delete
-  - "Add Agent" button to generate install tokens
+   - "Add Agent" button to generate setup commands
 
-When you add or edit anything, a modal dialog opens. The **Service dialog** includes all configuration options like repository URL, branch, build/run commands, ports, and secret references. The **Agent dialog** generates an install token and shows the exact command to run on your server.
+When you add or edit anything, a modal dialog opens. The **Service dialog** includes all configuration options like repository URL, branch, build/run commands, ports, and secret references. The **Agent dialog** generates a setup command with your agent ID and Cloudflare Access credentials.
 
 ## Step-by-Step Usage
 
@@ -158,21 +173,21 @@ On the Stack Detail page:
 
 1. Click "Add Agent"
 2. Enter a name (e.g., "server-01")
-3. Click "Generate Token"
+3. Click "Generate Command"
 4. Copy the install command shown - it will look like:
    ```bash
-   curl -fsSL https://raw.githubusercontent.com/corrieuys/potato-cloud-agent/main/install.sh | sudo bash -s -- --token <INSTALL_TOKEN> --control-plane https://your-control-plane.workers.dev
+   curl -fsSL https://your-domain.com/install.sh | sudo bash -s -- --agent-id <AGENT_ID> --stack-id <STACK_ID> --control-plane https://your-control-plane.workers.dev --access-client-id <CF_ACCESS_CLIENT_ID> --access-client-secret <CF_ACCESS_CLIENT_SECRET>
    ```
 
 5. **SSH into your Linux server** and run the install command:
    ```bash
-   curl -fsSL https://raw.githubusercontent.com/corrieuys/potato-cloud-agent/main/install.sh | sudo bash -s -- --token <INSTALL_TOKEN> --control-plane https://your-control-plane.workers.dev
+   curl -fsSL https://your-domain.com/install.sh | sudo bash -s -- --agent-id <AGENT_ID> --stack-id <STACK_ID> --control-plane https://your-control-plane.workers.dev --access-client-id <CF_ACCESS_CLIENT_ID> --access-client-secret <CF_ACCESS_CLIENT_SECRET>
    ```
 
 The install script will:
 - Install Go if not present
 - Download and build the agent
-- Register the agent with the control plane
+- Write the agent config with Cloudflare Access credentials
 - Create necessary directories
 - Start the agent as a background service
 

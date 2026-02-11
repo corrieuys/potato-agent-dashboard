@@ -88,12 +88,20 @@ versionsRoutes.post("/toggle-blue-green", async (c) => {
 	const [stack] = await db.select().from(stacks).where(eq(stacks.id, stackId));
 
 	// Notify agents about config change
-	await notifyStackAgents(db, stackId, {
-		stack_version: stack?.version || 0,
-		changed_at: new Date().toISOString(),
-		change_type: "config_change",
-		service_id: serviceId,
-	});
+	await notifyStackAgents(
+		db,
+		stackId,
+		{
+			stack_version: stack?.version || 0,
+			changed_at: new Date().toISOString(),
+			change_type: "config_change",
+			service_id: serviceId,
+		},
+		{
+			accessClientId: c.env.CF_ACCESS_CLIENT_ID,
+			accessClientSecret: c.env.CF_ACCESS_CLIENT_SECRET,
+		}
+	);
 
 	return c.json({
 		success: true,
@@ -184,12 +192,20 @@ versionsRoutes.post("/switch", async (c) => {
 	const [stack] = await db.select().from(stacks).where(eq(stacks.id, stackId));
 
 	// Notify agents
-	await notifyStackAgents(db, stackId, {
-		stack_version: stack?.version || 0,
-		changed_at: new Date().toISOString(),
-		change_type: "config_change",
-		service_id: serviceId,
-	});
+	await notifyStackAgents(
+		db,
+		stackId,
+		{
+			stack_version: stack?.version || 0,
+			changed_at: new Date().toISOString(),
+			change_type: "config_change",
+			service_id: serviceId,
+		},
+		{
+			accessClientId: c.env.CF_ACCESS_CLIENT_ID,
+			accessClientSecret: c.env.CF_ACCESS_CLIENT_SECRET,
+		}
+	);
 
 	return c.json({
 		success: true,
@@ -272,12 +288,20 @@ versionsRoutes.post("/rollback", async (c) => {
 	const [stack] = await db.select().from(stacks).where(eq(stacks.id, stackId));
 
 	// Notify agents
-	await notifyStackAgents(db, stackId, {
-		stack_version: stack?.version || 0,
-		changed_at: new Date().toISOString(),
-		change_type: "config_change",
-		service_id: serviceId,
-	});
+	await notifyStackAgents(
+		db,
+		stackId,
+		{
+			stack_version: stack?.version || 0,
+			changed_at: new Date().toISOString(),
+			change_type: "config_change",
+			service_id: serviceId,
+		},
+		{
+			accessClientId: c.env.CF_ACCESS_CLIENT_ID,
+			accessClientSecret: c.env.CF_ACCESS_CLIENT_SECRET,
+		}
+	);
 
 	return c.json({
 		success: true,

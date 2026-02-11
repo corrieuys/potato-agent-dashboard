@@ -258,7 +258,7 @@ webhooksRoutes.post("/github", async (c) => {
 
   // Get updated stack version after service updates
   const [stack] = await db.select().from(stacks).where(eq(stacks.id, stackId));
-  
+
   // Notify all agents in the stack about the config change
   let notificationResults = null;
   if (updatedCount > 0 && stack) {
@@ -270,6 +270,10 @@ webhooksRoutes.post("/github", async (c) => {
         changed_at: new Date().toISOString(),
         change_type: 'git_push',
         commit_ref: commitSha,
+      },
+      {
+        accessClientId: c.env.CF_ACCESS_CLIENT_ID,
+        accessClientSecret: c.env.CF_ACCESS_CLIENT_SECRET,
       }
     );
   }
