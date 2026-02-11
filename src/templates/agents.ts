@@ -1,4 +1,4 @@
-import { escapeHtml } from "./helpers.js";
+import { escapeHtml, getHealthChipClass, getStatusChipClass } from "./helpers.js";
 import type { Agent } from "./types.js";
 
 // Create agent form (for setup command generation)
@@ -82,6 +82,10 @@ export function agentsList(agents: Agent[]): string {
           <h4 class="headline text-xl">${escapeHtml(a.name || "Unnamed Agent")}</h4>
           <div class="subtle text-xs mono mt-1">ID: ${escapeHtml(a.id)}</div>
           <p class="subtle mt-2">${a.lastHeartbeatAt ? new Date(a.lastHeartbeatAt).toLocaleString() : "Never connected"}</p>
+          ${a.heartbeatStackVersion !== undefined && a.heartbeatStackVersion !== null
+      ? `<p class="subtle text-xs mt-1">Stack version: ${a.heartbeatStackVersion}</p>`
+      : ""
+    }
         </div>
         <div class="flex items-center gap-2">
           <button hx-get="/partials/agent-edit-form?stackId=${a.stackId}&agentId=${a.id}"
@@ -102,10 +106,44 @@ export function agentsList(agents: Agent[]): string {
         ? "badge-yellow"
         : "badge-gray"
     }">${escapeHtml(a.status || "Unknown")}</span>
+          ${a.heartbeatAgentStatus
+      ? `<span class="chip ${getStatusChipClass(a.heartbeatAgentStatus)}">${escapeHtml(a.heartbeatAgentStatus)}</span>`
+      : ""
+    }
         </div>
       </div>
+      <div class="divider"></div>
+      ${renderAgentServicesStatus(a)}
     </div>
   `).join("")}</div>`;
+}
+
+function renderAgentServicesStatus(agent: Agent): string {
+  const statuses = agent.serviceStatuses || [];
+  if (statuses.length === 0) {
+    return `<div class="subtle text-xs">No service status data in latest heartbeat.</div>`;
+  }
+
+  return `<div class="space-y-2">
+    <div class="subtle text-xs">Services from latest heartbeat</div>
+    <div class="space-y-2">
+      ${statuses.map((svc) => `
+        <div class="panel panel-strong" style="padding: 10px 12px;">
+          <div class="flex items-center justify-between gap-2">
+            <div class="headline text-sm">${escapeHtml(svc.name || svc.serviceId)}</div>
+            <div class="flex flex-wrap gap-2">
+              <span class="chip ${getStatusChipClass(svc.status)}">${escapeHtml(svc.status || "unknown")}</span>
+              ${svc.healthStatus && svc.healthStatus !== "unknown"
+          ? `<span class="chip ${getHealthChipClass(svc.healthStatus)}">${escapeHtml(svc.healthStatus)}</span>`
+          : ""
+        }
+            </div>
+          </div>
+          ${svc.lastError ? `<div class="subtle text-xs mt-1">Last error: ${escapeHtml(svc.lastError)}</div>` : ""}
+        </div>
+      `).join("")}
+    </div>
+  </div>`;
 }
 
 // Edit agent form

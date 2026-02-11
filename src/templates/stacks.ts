@@ -178,7 +178,10 @@ export function stackDetail(stack: Stack, services: Service[], agents: Agent[]):
           Add Agent
         </button>
       </div>
-      <div id="agents-container">
+      <div id="agents-container"
+           hx-get="/partials/agents?stackId=${stack.id}"
+           hx-trigger="every 15s"
+           hx-swap="innerHTML">
         ${agentsContent}
       </div>
     </section>

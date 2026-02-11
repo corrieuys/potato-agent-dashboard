@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { eq, desc } from "drizzle-orm";
 import { createClient } from "../db/client";
 import { stacks, services, agents, heartbeats } from "../db/schema";
+import type { Agent as AgentRow } from "../db/schema";
 import * as templates from "../templates";
 
 const htmlRoutes = new Hono<{ Bindings: CloudflareBindings }>();
@@ -37,50 +38,31 @@ htmlRoutes.get("/stacks/:id", async (c) => {
 		.where(eq(services.stackId, id));
 
 	const stackAgents = await db
-		.select({
-			id: agents.id,
-			stackId: agents.stackId,
-			name: agents.name,
-			status: agents.status,
-			lastHeartbeatAt: agents.lastHeartbeatAt,
-		})
+		.select()
 		.from(agents)
 		.where(eq(agents.stackId, id));
 
+	const stackAgentsWithHeartbeat = await withLatestHeartbeat(db, stackAgents);
+
 	// Get latest heartbeats to determine service statuses
-	const serviceStatuses: Record<string, { status: string; agentName: string; healthStatus?: string }> = {};
+	const serviceStatuses: Record<string, { status: string; agentName: string; healthStatus?: string; createdAt: number }> = {};
 
-	for (const agent of stackAgents) {
-		const [latestHeartbeat] = await db
-			.select({
-				servicesStatus: heartbeats.servicesStatus,
-			})
-			.from(heartbeats)
-			.where(eq(heartbeats.agentId, agent.id))
-			.orderBy(desc(heartbeats.createdAt))
-			.limit(1);
-
-		if (latestHeartbeat?.servicesStatus) {
-			try {
-				const statuses = JSON.parse(latestHeartbeat.servicesStatus as string);
-				if (Array.isArray(statuses)) {
-					for (const svcStatus of statuses) {
-						const service = stackServices.find(s => s.id === svcStatus.service_id)
-							|| stackServices.find(s => s.name === svcStatus.name);
-						if (service) {
-							// Only update if we don't have a status yet, or if this is more recent
-							if (!serviceStatuses[service.id]) {
-								serviceStatuses[service.id] = {
-									status: svcStatus.status,
-									agentName: agent.name || 'Unnamed',
-									healthStatus: svcStatus.health_status,
-								};
-							}
-						}
-					}
-				}
-			} catch (e) {
-				console.error('Failed to parse servicesStatus:', e);
+	for (const agent of stackAgentsWithHeartbeat) {
+		const statuses = agent.serviceStatuses || [];
+		for (const svcStatus of statuses) {
+			const service = stackServices.find((s) => s.id === svcStatus.serviceId)
+				|| stackServices.find((s) => s.name === svcStatus.name);
+			if (!service) {
+				continue;
+			}
+			const current = serviceStatuses[service.id];
+			if (!current || agent.latestHeartbeatCreatedAt > current.createdAt) {
+				serviceStatuses[service.id] = {
+					status: svcStatus.status,
+					agentName: agent.name || "Unnamed",
+					healthStatus: svcStatus.healthStatus,
+					createdAt: agent.latestHeartbeatCreatedAt,
+				};
 			}
 		}
 	}
@@ -88,15 +70,15 @@ htmlRoutes.get("/stacks/:id", async (c) => {
 	// Merge status into services
 	const servicesWithStatus = stackServices.map(s => ({
 		...s,
-		runtimeStatus: serviceStatuses[s.id]?.status || 'unknown',
-		healthStatus: serviceStatuses[s.id]?.healthStatus || 'unknown',
+		runtimeStatus: serviceStatuses[s.id]?.status || "unknown",
+		healthStatus: serviceStatuses[s.id]?.healthStatus || "unknown",
 		agentName: serviceStatuses[s.id]?.agentName,
 	}));
 
 	return c.html(templates.stackDetail(
 		stack as templates.Stack,
 		servicesWithStatus as templates.Service[],
-		stackAgents as templates.Agent[]
+		stackAgentsWithHeartbeat as templates.Agent[]
 	));
 });
 
@@ -145,17 +127,12 @@ htmlRoutes.get("/partials/agents", async (c) => {
 
 	const db = createClient(c.env.DB);
 	const stackAgents = await db
-		.select({
-			id: agents.id,
-			stackId: agents.stackId,
-			name: agents.name,
-			status: agents.status,
-			lastHeartbeatAt: agents.lastHeartbeatAt,
-		})
+		.select()
 		.from(agents)
 		.where(eq(agents.stackId, stackId));
 
-	return c.html(templates.agentsList(stackAgents as templates.Agent[]));
+	const stackAgentsWithHeartbeat = await withLatestHeartbeat(db, stackAgents);
+	return c.html(templates.agentsList(stackAgentsWithHeartbeat as templates.Agent[]));
 });
 
 // Edit service page
@@ -245,3 +222,90 @@ htmlRoutes.get("/partials/agent-edit-form", async (c) => {
 });
 
 export default htmlRoutes;
+
+type AgentHeartbeatServiceStatus = {
+	serviceId: string;
+	name: string;
+	status: string;
+	healthStatus: string;
+	restartCount: number;
+	lastError: string | null;
+};
+
+type AgentWithHeartbeat = {
+	id: string;
+	stackId: string;
+	name: string | null;
+	status: string;
+	lastHeartbeatAt: Date | null;
+	heartbeatStackVersion: number | null;
+	heartbeatAgentStatus: string | null;
+	serviceStatuses: AgentHeartbeatServiceStatus[];
+	latestHeartbeatCreatedAt: number;
+};
+
+function parseServicesStatus(raw: unknown): AgentHeartbeatServiceStatus[] {
+	if (!raw) {
+		return [];
+	}
+
+	let input: unknown = raw;
+	if (typeof raw === "string") {
+		try {
+			input = JSON.parse(raw);
+		} catch {
+			return [];
+		}
+	}
+
+	if (!Array.isArray(input)) {
+		return [];
+	}
+
+	return input.map((entry) => {
+		const obj = entry as Record<string, unknown>;
+		return {
+			serviceId: String(obj.service_id || ""),
+			name: String(obj.name || ""),
+			status: String(obj.status || "unknown"),
+			healthStatus: String(obj.health_status || "unknown"),
+			restartCount: Number(obj.restart_count || 0),
+			lastError: obj.last_error ? String(obj.last_error) : null,
+		};
+	});
+}
+
+async function withLatestHeartbeat(
+	db: ReturnType<typeof createClient>,
+	stackAgents: AgentRow[]
+): Promise<AgentWithHeartbeat[]> {
+	const enriched: AgentWithHeartbeat[] = [];
+	for (const agent of stackAgents) {
+		const [latestHeartbeat] = await db
+			.select({
+				stackVersion: heartbeats.stackVersion,
+				agentStatus: heartbeats.agentStatus,
+				servicesStatus: heartbeats.servicesStatus,
+				createdAt: heartbeats.createdAt,
+			})
+			.from(heartbeats)
+			.where(eq(heartbeats.agentId, agent.id))
+			.orderBy(desc(heartbeats.createdAt))
+			.limit(1);
+
+		enriched.push({
+			id: agent.id,
+			stackId: agent.stackId,
+			name: agent.name,
+			status: agent.status,
+			lastHeartbeatAt: agent.lastHeartbeatAt,
+			heartbeatStackVersion: latestHeartbeat?.stackVersion ?? null,
+			heartbeatAgentStatus: latestHeartbeat?.agentStatus ?? null,
+			serviceStatuses: parseServicesStatus(latestHeartbeat?.servicesStatus),
+			latestHeartbeatCreatedAt: latestHeartbeat?.createdAt
+				? new Date(latestHeartbeat.createdAt).getTime()
+				: 0,
+		});
+	}
+	return enriched;
+}
