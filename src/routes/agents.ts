@@ -42,7 +42,7 @@ agentsRoutes.post("/tokens", async (c) => {
 
 	const id = generateUUID();
 	const installToken = generateToken(32);
-	const installCommand = `curl -fsSL https://potatocloud.space/install.sh | sudo bash -s -- --token ${installToken} --control-plane https://your-control-plane.workers.dev`;
+	const installCommand = `curl -fsSL https://potatocloud.space/install.sh | sudo bash -s -- --token ${installToken} --stack-id ${stackId} --control-plane https://your-control-plane.workers.dev`;
 
 	await db.insert(agents).values({
 		id,
