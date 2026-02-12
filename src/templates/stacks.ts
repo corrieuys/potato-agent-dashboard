@@ -240,12 +240,16 @@ export function editStackPage(stack: Stack): string {
             <div class="service-section">
               <div class="service-section-header">
                 <h3>Control Plane</h3>
-                <p>Tune poll and proxy behavior for this stack.</p>
+                <p>Tune poll, heartbeat, and proxy behavior for this stack.</p>
               </div>
               <div class="service-field-row">
                 <div class="field">
                   <label class="label" for="edit-stack-poll-interval">Poll Interval (sec)</label>
                   <input type="number" id="edit-stack-poll-interval" name="poll_interval" value="${stack.pollInterval}" min="5" max="600" class="input">
+                </div>
+                <div class="field">
+                  <label class="label" for="edit-stack-heartbeat-interval">Heartbeat Interval (sec)</label>
+                  <input type="number" id="edit-stack-heartbeat-interval" name="heartbeat_interval" value="${stack.heartbeatInterval}" min="30" max="300" class="input">
                 </div>
                 <div class="field">
                   <label class="label" for="edit-stack-security-mode">Security Mode</label>

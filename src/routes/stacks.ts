@@ -102,6 +102,8 @@ stacksRoutes.patch("/:id", async (c) => {
 	if (body.description !== undefined) updates.description = body.description;
 	if (body.poll_interval !== undefined)
 		updates.pollInterval = parseInt(body.poll_interval);
+	if (body.heartbeat_interval !== undefined)
+		updates.heartbeatInterval = parseInt(body.heartbeat_interval);
 	if (body.security_mode !== undefined)
 		updates.securityMode = body.security_mode;
 	if (body.external_proxy_port !== undefined)

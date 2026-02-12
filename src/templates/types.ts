@@ -6,6 +6,7 @@ export interface Stack {
     description: string | null;
     version: number;
     pollInterval: number;
+    heartbeatInterval: number;
     securityMode: string;
     externalProxyPort: number;
     createdAt: Date;
