@@ -12,58 +12,9 @@ export function layout(content: string, title: string = "Potato Cloud"): string 
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/htmx.org@1.9.12"></script>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    // Dark mode implementation
-    if (localStorage.getItem('darkMode') === 'true' || 
-        (!localStorage.getItem('darkMode') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-      document.documentElement.classList.add('dark');
-    }
-    
-    function toggleDarkMode() {
-      const html = document.documentElement;
-      const isDark = html.classList.contains('dark');
-      
-      if (isDark) {
-        html.classList.remove('dark');
-        localStorage.setItem('darkMode', 'false');
-      } else {
-        html.classList.add('dark');
-        localStorage.setItem('darkMode', 'true');
-      }
-    }
-    
-    // Listen for system theme changes
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-      if (!localStorage.getItem('darkMode')) {
-        if (e.matches) {
-          document.documentElement.classList.add('dark');
-        } else {
-          document.documentElement.classList.remove('dark');
-        }
-      }
-    });
-  </script>
   <style>
     :root {
-      --bg: #f6f4f1;
-      --bg-2: #efe9e2;
-      --panel: #ffffffcc;
-      --panel-strong: #ffffff;
-      --panel-border: #e6ded5;
-      --ink: #0f172a;
-      --muted: #5f6b7a;
-      --accent: #0f766e;
-      --accent-2: #f59e0b;
-      --accent-3: #ef4444;
-      --shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
-      --radius-lg: 16px;
-      --radius-md: 12px;
-      --radius-sm: 8px;
-    }
-    .dark {
       color-scheme: dark;
-    }
-    .dark body {
       --bg: #0b0f14;
       --bg-2: #0f1722;
       --panel: rgba(17, 24, 39, 0.78);
@@ -75,6 +26,9 @@ export function layout(content: string, title: string = "Potato Cloud"): string 
       --accent-2: #f59e0b;
       --accent-3: #f97316;
       --shadow: 0 16px 34px rgba(0, 0, 0, 0.35);
+      --radius-lg: 16px;
+      --radius-md: 12px;
+      --radius-sm: 8px;
     }
     * { box-sizing: border-box; }
     body {
@@ -123,10 +77,9 @@ export function layout(content: string, title: string = "Potato Cloud"): string 
       top: 0;
       z-index: 10;
       backdrop-filter: blur(14px);
-      background: rgba(246, 244, 241, 0.75);
+      background: rgba(11, 15, 20, 0.75);
       border-bottom: 1px solid var(--panel-border);
     }
-    .dark .nav-shell { background: rgba(11, 15, 20, 0.75); }
     .nav-inner {
       max-width: 1200px;
       margin: 0 auto;
@@ -166,17 +119,6 @@ export function layout(content: string, title: string = "Potato Cloud"): string 
       border-radius: 999px;
     }
     .nav-link:hover { color: var(--ink); background: rgba(148, 163, 184, 0.12); }
-    .icon-btn {
-      border: 1px solid var(--panel-border);
-      background: var(--panel);
-      border-radius: 999px;
-      padding: 6px;
-      color: var(--muted);
-      display: grid;
-      place-items: center;
-      transition: transform 0.2s ease, color 0.2s ease, border 0.2s ease;
-    }
-    .icon-btn:hover { color: var(--ink); border-color: rgba(15, 118, 110, 0.4); transform: translateY(-1px); }
 
     .page {
       position: relative;
@@ -279,7 +221,7 @@ export function layout(content: string, title: string = "Potato Cloud"): string 
     .field { display: grid; gap: 6px; }
     .label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.18em; color: var(--muted); }
     .input, select, textarea {
-      background: rgba(255, 255, 255, 0.85);
+      background: rgba(15, 23, 42, 0.7);
       border: 1px solid var(--panel-border);
       border-radius: var(--radius-sm);
       padding: 7px 9px;
@@ -287,7 +229,6 @@ export function layout(content: string, title: string = "Potato Cloud"): string 
       color: var(--ink);
       outline: none;
     }
-    .dark .input, .dark select, .dark textarea { background: rgba(15, 23, 42, 0.7); }
     .input:focus, select:focus, textarea:focus { border-color: rgba(15, 118, 110, 0.6); box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.15); }
 
     .section-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
@@ -502,22 +443,10 @@ export function layout(content: string, title: string = "Potato Cloud"): string 
           </svg>
           Potato Cloud
         </span>
-        <span class="brand-badge">simple</span>
       </a>
       <div class="nav-actions">
-        <a href="/" class="nav-link">Stacks</a>
-        <a href="/" class="nav-link">Home</a>
+        <a href="/stacks" class="nav-link">Stacks</a>
         <a href="/docs" class="nav-link">Docs</a>
-        <button
-          onclick="toggleDarkMode()"
-          class="icon-btn"
-          title="Toggle dark mode"
-        >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path class="dark:hidden" fill-rule="evenodd" d="M10 2a1 1 0 011-1 0 1 0 11-2a1 1 0 01-1 0 1 0 11 2zM0 18a2 2 0 105 2 2 0 10.01 2-2 2-2 2z" clip-rule="evenodd"/>
-            <path class="hidden dark:block" fill-rule="evenodd" d="M17.293 13.293A8 8 0 01-5.657-5.657 8 8 0 18.343a2 2 0 105 2 2 0 11.314 0-2.686A8 8 0 011.656 5.656 0 00-5.657 5.657a8 8 0 001.656 5.656 0z" clip-rule="evenodd"/>
-          </svg>
-        </button>
       </div>
     </div>
   </nav>

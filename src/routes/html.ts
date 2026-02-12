@@ -7,8 +7,25 @@ import * as templates from "../templates";
 
 const htmlRoutes = new Hono<{ Bindings: CloudflareBindings }>();
 
-// Stacks dashboard - list all stacks
+// Home page
 htmlRoutes.get("/", async (c) => {
+	return c.html(templates.homePage());
+});
+
+
+// Documentation page
+htmlRoutes.get("/docs", async (c) => {
+	return c.html(templates.docsPage());
+});
+
+// Documentation page (trailing slash and index)
+htmlRoutes.get("/docs/", async (c) => {
+	return c.html(templates.docsPage());
+});
+
+
+// Stacks dashboard - list all stacks
+htmlRoutes.get("/stacks", async (c) => {
 	const db = createClient(c.env.DB);
 	const allStacks = await db.select().from(stacks).orderBy(desc(stacks.createdAt));
 

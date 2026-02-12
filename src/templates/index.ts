@@ -6,3 +6,4 @@ export * from "./services.js";
 export * from "./agents.js";
 export * from "./docs.js";
 export * from "./error.js";
+export * from "./home.js";
