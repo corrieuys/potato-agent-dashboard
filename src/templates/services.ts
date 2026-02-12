@@ -346,9 +346,16 @@ export function servicesList(services: Service[]): string {
           ${s.healthStatus && s.healthStatus !== "unknown" ? `<span class="chip ${getHealthChipClass(s.healthStatus)}">${escapeHtml(s.healthStatus)}</span>` : ""}
         </div>
         ${s.agentName ? `<div class="subtle text-xs">Last seen on ${escapeHtml(s.agentName)}</div>` : ""}
+        ${s.runtimeStatusHeartbeatAt ? `<div class="subtle text-xs">Latest heartbeat: ${escapeHtml(formatHeartbeatTimestamp(s.runtimeStatusHeartbeatAt))}</div>` : ""}
       </div>
     </div>
   `).join("")}</div>`;
+}
+
+function formatHeartbeatTimestamp(value: number): string {
+  const millis = value < 1_000_000_000_000 ? value * 1000 : value;
+  const date = new Date(millis);
+  return Number.isNaN(date.getTime()) ? "Unknown" : date.toLocaleString();
 }
 
 // Edit service page

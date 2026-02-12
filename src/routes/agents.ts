@@ -88,19 +88,8 @@ agentsRoutes.patch("/:agentId", async (c) => {
 
 	await db.update(agents).set(updates).where(eq(agents.id, agentId));
 
-	// Return updated agents list for HTMX
 	if (wantsHTML(c)) {
-		const allAgents = await db
-			.select({
-				id: agents.id,
-				stackId: agents.stackId,
-				name: agents.name,
-				status: agents.status,
-				lastHeartbeatAt: agents.lastHeartbeatAt,
-			})
-			.from(agents)
-			.where(eq(agents.stackId, stackId));
-		return c.html(templates.agentsList(allAgents as templates.Agent[]));
+		return c.html(`<div class="text-green-700 text-sm">Agent updated successfully.</div>`);
 	}
 
 	const [updated] = await db.select().from(agents).where(eq(agents.id, agentId));

@@ -41,6 +41,7 @@ export interface Service {
     runtimeStatus?: string;
     healthStatus?: string;
     agentName?: string;
+    runtimeStatusHeartbeatAt?: number | null;
 }
 
 export interface Agent {

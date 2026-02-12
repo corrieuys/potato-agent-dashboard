@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
 import { createClient } from "../db/client";
 import { stacks, services, agents, heartbeats } from "../db/schema";
 import type { Agent as AgentRow } from "../db/schema";
@@ -75,6 +75,7 @@ htmlRoutes.get("/stacks/:id", async (c) => {
 		runtimeStatus: serviceStatuses[s.id]?.status || "unknown",
 		healthStatus: serviceStatuses[s.id]?.healthStatus || "unknown",
 		agentName: serviceStatuses[s.id]?.agentName,
+		runtimeStatusHeartbeatAt: serviceStatuses[s.id]?.createdAt ?? null,
 	}));
 
 	return c.html(templates.stackDetail(
@@ -109,6 +110,19 @@ htmlRoutes.get("/stacks/:id/services/new", async (c) => {
 	}
 
 	return c.html(templates.createServicePage(stack as templates.Stack));
+});
+
+// Edit stack page
+htmlRoutes.get("/stacks/:id/edit", async (c) => {
+	const stackId = c.req.param("id");
+	const db = createClient(c.env.DB);
+
+	const [stack] = await db.select().from(stacks).where(eq(stacks.id, stackId));
+	if (!stack) {
+		return c.html(templates.errorPage("Stack not found", 404), 404);
+	}
+
+	return c.html(templates.editStackPage(stack as templates.Stack));
 });
 
 // Create agent form partial
@@ -185,6 +199,38 @@ htmlRoutes.get("/stacks/:id/services/:serviceId/edit", async (c) => {
 	return c.html(templates.editServicePage(stack as templates.Stack, service as templates.Service));
 });
 
+// Edit agent page
+htmlRoutes.get("/stacks/:id/agents/:agentId/edit", async (c) => {
+	const stackId = c.req.param("id");
+	const agentId = c.req.param("agentId");
+	const db = createClient(c.env.DB);
+
+	const [stack] = await db.select().from(stacks).where(eq(stacks.id, stackId));
+	if (!stack) {
+		return c.html(templates.errorPage("Stack not found", 404), 404);
+	}
+
+	const [agent] = await db
+		.select()
+		.from(agents)
+		.where(and(eq(agents.id, agentId), eq(agents.stackId, stackId)));
+
+	if (!agent) {
+		return c.html(templates.errorPage("Agent not found", 404), 404);
+	}
+
+	const stackAgentsWithHeartbeat = await withLatestHeartbeat(db, [agent]);
+	const enrichedAgent = stackAgentsWithHeartbeat[0] || {
+		...agent,
+		latestHeartbeatCreatedAt: 0,
+		heartbeatStackVersion: null,
+		heartbeatAgentStatus: null,
+		serviceStatuses: [],
+	};
+
+	return c.html(templates.editAgentPage(stackId, enrichedAgent as templates.Agent));
+});
+
 // Documentation page
 htmlRoutes.get("/docs", async (c) => {
 	return c.html(templates.docsPage());
@@ -197,33 +243,6 @@ htmlRoutes.get("/docs/", async (c) => {
 
 htmlRoutes.get("/docs/index.html", async (c) => {
 	return c.html(templates.docsPage());
-});
-
-// Edit agent form partial
-htmlRoutes.get("/partials/agent-edit-form", async (c) => {
-	const stackId = c.req.query("stackId");
-	const agentId = c.req.query("agentId");
-	if (!stackId || !agentId) {
-		return c.html(templates.errorPage("Stack ID and Agent ID required", 400), 400);
-	}
-
-	const db = createClient(c.env.DB);
-	const [agent] = await db
-		.select({
-			id: agents.id,
-			stackId: agents.stackId,
-			name: agents.name,
-			status: agents.status,
-			lastHeartbeatAt: agents.lastHeartbeatAt,
-		})
-		.from(agents)
-		.where(eq(agents.id, agentId));
-
-	if (!agent) {
-		return c.html(templates.errorPage("Agent not found", 404), 404);
-	}
-
-	return c.html(templates.editAgentForm(stackId, agent as templates.Agent));
 });
 
 export default htmlRoutes;

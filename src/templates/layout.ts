@@ -198,8 +198,8 @@ export function layout(content: string, title: string = "Potato Cloud"): string 
       padding: 18px;
     }
     .panel-strong { background: var(--panel-strong); }
-    .panel-hover { transition: transform 0.2s ease, border-color 0.2s ease; }
-    .panel-hover:hover { transform: translateY(-3px); border-color: rgba(15, 118, 110, 0.35); }
+    .panel-hover { transition: border-color 0.2s ease; }
+    .panel-hover:hover { border-color: rgba(15, 118, 110, 0.35); }
 
     .btn {
       border-radius: 999px;
@@ -323,9 +323,9 @@ export function layout(content: string, title: string = "Potato Cloud"): string 
       padding: 14px 16px;
       display: grid;
       gap: 12px;
-      transition: transform 0.2s ease, border-color 0.2s ease;
+      transition: border-color 0.2s ease;
     }
-    .service-card:hover { transform: translateY(-2px); border-color: rgba(15, 118, 110, 0.35); }
+    .service-card:hover { border-color: rgba(15, 118, 110, 0.35); }
     .service-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
     .service-title-row {
       display: flex;

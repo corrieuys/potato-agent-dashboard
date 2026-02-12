@@ -86,7 +86,7 @@ stacksRoutes.get("/:id", async (c) => {
 // Update a stack
 stacksRoutes.patch("/:id", async (c) => {
 	const id = c.req.param("id");
-	const body = await c.req.json();
+	const body = await parseBody(c);
 	const db = createClient(c.env.DB);
 
 	const [existing] = await db.select().from(stacks).where(eq(stacks.id, id));
@@ -101,11 +101,11 @@ stacksRoutes.patch("/:id", async (c) => {
 	if (body.name !== undefined) updates.name = body.name;
 	if (body.description !== undefined) updates.description = body.description;
 	if (body.poll_interval !== undefined)
-		updates.pollInterval = body.poll_interval;
+		updates.pollInterval = parseInt(body.poll_interval);
 	if (body.security_mode !== undefined)
 		updates.securityMode = body.security_mode;
 	if (body.external_proxy_port !== undefined)
-		updates.externalProxyPort = body.external_proxy_port;
+		updates.externalProxyPort = parseInt(body.external_proxy_port);
 
 	await db
 		.update(stacks)
@@ -113,6 +113,9 @@ stacksRoutes.patch("/:id", async (c) => {
 		.where(eq(stacks.id, id));
 
 	const [updated] = await db.select().from(stacks).where(eq(stacks.id, id));
+	if (wantsHTML(c)) {
+		return c.html(`<div class="text-green-700 text-sm">Stack updated successfully.</div>`);
+	}
 	return c.json({ stack: updated });
 });
 
