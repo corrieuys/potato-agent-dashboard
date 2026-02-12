@@ -20,6 +20,7 @@ export function createServicePage(stack: Stack): string {
       <form id="service-create-form"
             action="/api/stacks/${stack.id}/services"
             method="post"
+            data-service-type-form="true"
             hx-post="/api/stacks/${stack.id}/services"
             hx-target="#service-create-feedback"
             hx-swap="innerHTML"
@@ -33,12 +34,19 @@ export function createServicePage(stack: Stack): string {
             <div class="service-section">
               <div class="service-section-header">
                 <h3>Identity</h3>
-                <p>Name it and decide how it is exposed.</p>
+                <p>Name it, pick a service type, and decide how it is exposed.</p>
               </div>
               <div class="service-field-row">
                 <div class="field">
                   <label class="label" for="service-name">Service Name *</label>
                   <input type="text" id="service-name" name="name" required placeholder="api-service" class="input">
+                </div>
+                <div class="field">
+                  <label class="label" for="service-type">Service Type *</label>
+                  <select id="service-type" name="service_type" class="input">
+                    <option value="git" selected>Git Repository Build</option>
+                    <option value="docker">Docker Image</option>
+                  </select>
                 </div>
                 <div class="field">
                   <label class="label" for="service-external-path">External Path</label>
@@ -47,15 +55,15 @@ export function createServicePage(stack: Stack): string {
               </div>
             </div>
 
-            <div class="service-section">
+            <div class="service-section service-type-git">
               <div class="service-section-header">
                 <h3>Repository</h3>
                 <p>Connect the source and optional SSH settings.</p>
               </div>
               <div class="service-field-row">
                 <div class="field span-2">
-                  <label class="label" for="service-git-url">Git Repository URL *</label>
-                  <input type="url" id="service-git-url" name="git_url" required placeholder="https://github.com/user/repo.git" class="input">
+                  <label class="label" for="service-git-url">Git Repository URL</label>
+                  <input type="url" id="service-git-url" name="git_url" data-required-for="git" placeholder="https://github.com/user/repo.git" class="input">
                 </div>
                 <div class="field">
                   <label class="label" for="service-git-ref">Git Reference</label>
@@ -73,19 +81,41 @@ export function createServicePage(stack: Stack): string {
               </div>
             </div>
 
-            <div class="service-section">
+            <div class="service-section service-type-git">
               <div class="service-section-header">
                 <h3>Build & Run</h3>
                 <p>Provide the exact commands to build and start your app.</p>
               </div>
               <div class="service-field-row">
                 <div class="field span-2">
-                  <label class="label" for="service-build-command">Build Command *</label>
-                  <input type="text" id="service-build-command" name="build_command" required placeholder="npm run build" class="input">
+                  <label class="label" for="service-build-command">Build Command</label>
+                  <input type="text" id="service-build-command" name="build_command" data-required-for="git" placeholder="npm run build" class="input">
                 </div>
                 <div class="field span-2">
-                  <label class="label" for="service-run-command">Run Command *</label>
-                  <input type="text" id="service-run-command" name="run_command" required placeholder="npm start" class="input">
+                  <label class="label" for="service-run-command">Run Command</label>
+                  <input type="text" id="service-run-command" name="run_command" data-required-for="git" placeholder="npm start" class="input">
+                </div>
+              </div>
+            </div>
+
+            <div class="service-section service-type-docker" style="display:none;">
+              <div class="service-section-header">
+                <h3>Docker Image</h3>
+                <p>Run a prebuilt container image directly.</p>
+              </div>
+              <div class="service-field-row">
+                <div class="field span-2">
+                  <label class="label" for="service-docker-image">Docker Image</label>
+                  <input type="text" id="service-docker-image" name="docker_image" data-required-for="docker" placeholder="nginx:1.27-alpine" class="input">
+                </div>
+                <div class="field span-2">
+                  <label class="label" for="service-docker-run-args">Docker Run Arguments</label>
+                  <input type="text" id="service-docker-run-args" name="docker_run_args" placeholder="--restart unless-stopped --cpus 1 --memory 512m" class="input">
+                  <p class="subtle text-xs">Optional additional docker run flags. Required name and port mapping are managed by the agent.</p>
+                </div>
+                <div class="field span-2">
+                  <label class="label" for="service-docker-command">Container Command Override</label>
+                  <input type="text" id="service-docker-command" name="run_command" placeholder="nginx -g 'daemon off;'" class="input">
                 </div>
               </div>
             </div>
@@ -128,7 +158,7 @@ export function createServicePage(stack: Stack): string {
               </div>
             </div>
 
-            <details class="service-section">
+            <details class="service-section service-type-git">
               <summary class="service-section-summary">Advanced Docker Options</summary>
               <div class="service-section-body">
                 <div class="service-section-header">
@@ -246,6 +276,31 @@ export function createServicePage(stack: Stack): string {
         .service-form-grid { grid-template-columns: 1fr; }
       }
     </style>
+    <script>
+      (function() {
+        const form = document.getElementById("service-create-form");
+        if (!form) return;
+        const typeSelect = form.querySelector('select[name="service_type"]');
+        if (!typeSelect) return;
+
+        const applyMode = () => {
+          const mode = typeSelect.value === "docker" ? "docker" : "git";
+          form.querySelectorAll('.service-type-git, .service-type-docker').forEach((section) => {
+            const isGit = section.classList.contains("service-type-git");
+            const show = mode === (isGit ? "git" : "docker");
+            section.style.display = show ? "" : "none";
+            section.querySelectorAll("input, select, textarea").forEach((el) => {
+              el.disabled = !show;
+              const requiredFor = el.getAttribute("data-required-for");
+              el.required = show && requiredFor === mode;
+            });
+          });
+        };
+
+        typeSelect.addEventListener("change", applyMode);
+        applyMode();
+      })();
+    </script>
 
   </div>`;
 
@@ -269,7 +324,10 @@ export function servicesList(services: Service[]): string {
             <h4 class="service-title">${escapeHtml(s.name)}</h4>
             ${s.externalPath ? `<span class="service-path">${escapeHtml(s.externalPath)}</span>` : ""}
           </div>
-          <div class="service-meta mono">${escapeHtml(s.gitUrl)}</div>
+          <div class="service-meta mono">${s.serviceType === "docker"
+      ? escapeHtml(s.dockerImage || "docker-image")
+      : escapeHtml(s.gitUrl)
+    }</div>
         </div>
         <div class="service-actions">
           <a href="/stacks/${s.stackId}/services/${s.id}/edit" class="btn btn-ghost btn-compact">Edit</a>
@@ -315,6 +373,7 @@ export function editServicePage(stack: Stack, service: Service): string {
       <form id="service-edit-form"
             action="/api/stacks/${stack.id}/services/${service.id}"
             method="post"
+            data-service-type-form="true"
             hx-patch="/api/stacks/${stack.id}/services/${service.id}"
             hx-target="#service-edit-feedback"
             hx-swap="innerHTML"
@@ -328,12 +387,19 @@ export function editServicePage(stack: Stack, service: Service): string {
             <div class="service-section">
               <div class="service-section-header">
                 <h3>Identity</h3>
-                <p>Name it and decide how it is exposed.</p>
+                <p>Name it, pick a service type, and decide how it is exposed.</p>
               </div>
               <div class="service-field-row">
                 <div class="field">
                   <label class="label" for="edit-service-name">Service Name *</label>
                   <input type="text" id="edit-service-name" name="name" required value="${escapeHtml(service.name)}" class="input">
+                </div>
+                <div class="field">
+                  <label class="label" for="edit-service-type">Service Type *</label>
+                  <select id="edit-service-type" name="service_type" class="input">
+                    <option value="git" ${service.serviceType !== "docker" ? "selected" : ""}>Git Repository Build</option>
+                    <option value="docker" ${service.serviceType === "docker" ? "selected" : ""}>Docker Image</option>
+                  </select>
                 </div>
                 <div class="field">
                   <label class="label" for="edit-service-external-path">External Path</label>
@@ -342,15 +408,15 @@ export function editServicePage(stack: Stack, service: Service): string {
               </div>
             </div>
 
-            <div class="service-section">
+            <div class="service-section service-type-git">
               <div class="service-section-header">
                 <h3>Repository</h3>
                 <p>Source settings and optional pinning.</p>
               </div>
               <div class="service-field-row">
                 <div class="field span-2">
-                  <label class="label" for="edit-service-git-url">Git Repository URL *</label>
-                  <input type="url" id="edit-service-git-url" name="git_url" required value="${escapeHtml(service.gitUrl)}" class="input">
+                  <label class="label" for="edit-service-git-url">Git Repository URL</label>
+                  <input type="url" id="edit-service-git-url" name="git_url" data-required-for="git" value="${escapeHtml(service.gitUrl)}" class="input">
                 </div>
                 <div class="field">
                   <label class="label" for="edit-service-git-ref">Git Reference</label>
@@ -368,19 +434,41 @@ export function editServicePage(stack: Stack, service: Service): string {
               </div>
             </div>
 
-            <div class="service-section">
+            <div class="service-section service-type-git">
               <div class="service-section-header">
                 <h3>Build & Run</h3>
                 <p>Provide the exact commands to build and start your app.</p>
               </div>
               <div class="service-field-row">
                 <div class="field span-2">
-                  <label class="label" for="edit-service-build-command">Build Command *</label>
-                  <input type="text" id="edit-service-build-command" name="build_command" required value="${escapeHtml(service.buildCommand)}" class="input">
+                  <label class="label" for="edit-service-build-command">Build Command</label>
+                  <input type="text" id="edit-service-build-command" name="build_command" data-required-for="git" value="${escapeHtml(service.buildCommand)}" class="input">
                 </div>
                 <div class="field span-2">
-                  <label class="label" for="edit-service-run-command">Run Command *</label>
-                  <input type="text" id="edit-service-run-command" name="run_command" required value="${escapeHtml(service.runCommand)}" class="input">
+                  <label class="label" for="edit-service-run-command">Run Command</label>
+                  <input type="text" id="edit-service-run-command" name="run_command" data-required-for="git" value="${escapeHtml(service.runCommand)}" class="input">
+                </div>
+              </div>
+            </div>
+
+            <div class="service-section service-type-docker" style="display:none;">
+              <div class="service-section-header">
+                <h3>Docker Image</h3>
+                <p>Run a prebuilt container image directly.</p>
+              </div>
+              <div class="service-field-row">
+                <div class="field span-2">
+                  <label class="label" for="edit-service-docker-image">Docker Image</label>
+                  <input type="text" id="edit-service-docker-image" name="docker_image" data-required-for="docker" value="${escapeHtml(service.dockerImage || "")}" class="input">
+                </div>
+                <div class="field span-2">
+                  <label class="label" for="edit-service-docker-run-args">Docker Run Arguments</label>
+                  <input type="text" id="edit-service-docker-run-args" name="docker_run_args" value="${escapeHtml(service.dockerRunArgs || "")}" class="input">
+                  <p class="subtle text-xs">Optional additional docker run flags. Required name and port mapping are managed by the agent.</p>
+                </div>
+                <div class="field span-2">
+                  <label class="label" for="edit-service-docker-command">Container Command Override</label>
+                  <input type="text" id="edit-service-docker-command" name="run_command" value="${service.serviceType === "docker" ? escapeHtml(service.runCommand || "") : ""}" class="input">
                 </div>
               </div>
             </div>
@@ -423,7 +511,7 @@ export function editServicePage(stack: Stack, service: Service): string {
               </div>
             </div>
 
-            <details class="service-section">
+            <details class="service-section service-type-git">
               <summary class="service-section-summary">Advanced Docker Options</summary>
               <div class="service-section-body">
                 <div class="service-section-header">
@@ -541,6 +629,31 @@ export function editServicePage(stack: Stack, service: Service): string {
         .service-form-grid { grid-template-columns: 1fr; }
       }
     </style>
+    <script>
+      (function() {
+        const form = document.getElementById("service-edit-form");
+        if (!form) return;
+        const typeSelect = form.querySelector('select[name="service_type"]');
+        if (!typeSelect) return;
+
+        const applyMode = () => {
+          const mode = typeSelect.value === "docker" ? "docker" : "git";
+          form.querySelectorAll('.service-type-git, .service-type-docker').forEach((section) => {
+            const isGit = section.classList.contains("service-type-git");
+            const show = mode === (isGit ? "git" : "docker");
+            section.style.display = show ? "" : "none";
+            section.querySelectorAll("input, select, textarea").forEach((el) => {
+              el.disabled = !show;
+              const requiredFor = el.getAttribute("data-required-for");
+              el.required = show && requiredFor === mode;
+            });
+          });
+        };
+
+        typeSelect.addEventListener("change", applyMode);
+        applyMode();
+      })();
+    </script>
 
   </div>`;
 

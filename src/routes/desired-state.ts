@@ -83,10 +83,13 @@ desiredStateRoutes.get("/", async (c) => {
 			const serviceData: any = {
 				id: s.id,
 				name: s.name,
+				service_type: s.serviceType || "git",
 				git_url: s.gitUrl,
 				git_ref: s.gitRef,
 				git_commit: s.gitCommit || "",
 				git_ssh_key: s.gitSshKey || "",
+				docker_image: s.dockerImage || "",
+				docker_run_args: s.dockerRunArgs || "",
 				build_command: s.buildCommand,
 				run_command: s.runCommand,
 				runtime: s.runtime || "",

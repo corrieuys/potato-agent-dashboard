@@ -16,7 +16,10 @@ export interface Service {
     id: string;
     stackId: string;
     name: string;
+    serviceType?: "git" | "docker";
     gitUrl: string;
+    dockerImage?: string | null;
+    dockerRunArgs?: string | null;
     gitRef?: string;
     gitCommit?: string | null;
     gitSshKey?: string | null;

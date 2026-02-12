@@ -25,13 +25,32 @@ servicesRoutes.post("/", async (c) => {
 	const stackId = c.req.param("stackId");
 	const body = await parseBody(c);
 	const db = createClient(c.env.DB);
+	const serviceType = (body.service_type === "docker" ? "docker" : "git") as "git" | "docker";
 
-	if (!body.name || !body.git_url || !body.port || !body.build_command || !body.run_command) {
+	if (!body.name || !body.port) {
+		if (wantsHTML(c)) {
+			return c.html(`<div class="text-red-600 p-4">Missing required fields: name, port</div>`, 400);
+		}
+		return c.json(
+			{ error: "Missing required fields: name, port" },
+			400
+		);
+	}
+	if (serviceType === "git" && (!body.git_url || !body.build_command || !body.run_command)) {
 		if (wantsHTML(c)) {
 			return c.html(`<div class="text-red-600 p-4">Missing required fields: name, git_url, port, build_command, run_command</div>`, 400);
 		}
 		return c.json(
 			{ error: "Missing required fields: name, git_url, port, build_command, run_command" },
+			400
+		);
+	}
+	if (serviceType === "docker" && !body.docker_image) {
+		if (wantsHTML(c)) {
+			return c.html(`<div class="text-red-600 p-4">Missing required fields for docker service: docker_image</div>`, 400);
+		}
+		return c.json(
+			{ error: "Missing required fields for docker service: docker_image" },
 			400
 		);
 	}
@@ -81,12 +100,15 @@ servicesRoutes.post("/", async (c) => {
 		id,
 		stackId,
 		name: body.name,
-		gitUrl: body.git_url,
+		serviceType,
+		gitUrl: body.git_url || "",
 		gitRef: body.git_ref || "main",
 		gitCommit: body.git_commit || null,
 		gitSshKey: body.git_ssh_key || null,
-		buildCommand: body.build_command,
-		runCommand: body.run_command,
+		dockerImage: body.docker_image || null,
+		dockerRunArgs: body.docker_run_args || null,
+		buildCommand: body.build_command || "",
+		runCommand: body.run_command || "",
 		runtime: body.runtime || null,
 		dockerfilePath: body.dockerfile_path || null,
 		dockerContext: body.docker_context || null,
@@ -113,7 +135,9 @@ servicesRoutes.post("/", async (c) => {
 				id: services.id,
 				stackId: services.stackId,
 				name: services.name,
+				serviceType: services.serviceType,
 				gitUrl: services.gitUrl,
+				dockerImage: services.dockerImage,
 				port: services.port,
 				externalPath: services.externalPath,
 			})
@@ -150,10 +174,15 @@ servicesRoutes.patch("/:serviceId", async (c) => {
 	};
 
 	if (body.name !== undefined) updates.name = body.name;
+	if (body.service_type !== undefined) {
+		updates.serviceType = body.service_type === "docker" ? "docker" : "git";
+	}
 	if (body.git_url !== undefined) updates.gitUrl = body.git_url;
 	if (body.git_ref !== undefined) updates.gitRef = body.git_ref;
 	if (body.git_commit !== undefined) updates.gitCommit = body.git_commit;
 	if (body.git_ssh_key !== undefined) updates.gitSshKey = body.git_ssh_key;
+	if (body.docker_image !== undefined) updates.dockerImage = body.docker_image || null;
+	if (body.docker_run_args !== undefined) updates.dockerRunArgs = body.docker_run_args || null;
 	if (body.build_command !== undefined) updates.buildCommand = body.build_command;
 	if (body.run_command !== undefined) updates.runCommand = body.run_command;
 	if (body.runtime !== undefined) updates.runtime = body.runtime || null;
@@ -191,6 +220,25 @@ servicesRoutes.patch("/:serviceId", async (c) => {
 		}
 	}
 
+	const effectiveServiceType = (updates.serviceType || existing.serviceType || "git") as "git" | "docker";
+	const effectiveDockerImage = updates.dockerImage !== undefined ? updates.dockerImage : existing.dockerImage;
+	const effectiveGitURL = updates.gitUrl !== undefined ? updates.gitUrl : existing.gitUrl;
+	const effectiveBuildCommand = updates.buildCommand !== undefined ? updates.buildCommand : existing.buildCommand;
+	const effectiveRunCommand = updates.runCommand !== undefined ? updates.runCommand : existing.runCommand;
+
+	if (effectiveServiceType === "docker" && !effectiveDockerImage) {
+		if (wantsHTML(c)) {
+			return c.html(`<div class="text-red-600 p-4">Docker services require docker_image</div>`, 400);
+		}
+		return c.json({ error: "Docker services require docker_image" }, 400);
+	}
+	if (effectiveServiceType === "git" && (!effectiveGitURL || !effectiveBuildCommand || !effectiveRunCommand)) {
+		if (wantsHTML(c)) {
+			return c.html(`<div class="text-red-600 p-4">Git services require git_url, build_command, and run_command</div>`, 400);
+		}
+		return c.json({ error: "Git services require git_url, build_command, and run_command" }, 400);
+	}
+
 	await db.update(services).set(updates).where(eq(services.id, serviceId));
 
 	await db
@@ -205,7 +253,9 @@ servicesRoutes.patch("/:serviceId", async (c) => {
 				id: services.id,
 				stackId: services.stackId,
 				name: services.name,
+				serviceType: services.serviceType,
 				gitUrl: services.gitUrl,
+				dockerImage: services.dockerImage,
 				port: services.port,
 				externalPath: services.externalPath,
 			})
@@ -242,7 +292,9 @@ servicesRoutes.delete("/:serviceId", async (c) => {
 				id: services.id,
 				stackId: services.stackId,
 				name: services.name,
+				serviceType: services.serviceType,
 				gitUrl: services.gitUrl,
+				dockerImage: services.dockerImage,
 				port: services.port,
 				externalPath: services.externalPath,
 			})
