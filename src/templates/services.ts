@@ -49,8 +49,9 @@ export function createServicePage(stack: Stack): string {
                   </select>
                 </div>
                 <div class="field">
-                  <label class="label" for="service-external-path">External Path</label>
-                  <input type="text" id="service-external-path" name="external_path" placeholder="/api" class="input">
+                  <label class="label" for="service-hostname">Hostname</label>
+                  <input type="text" id="service-hostname" name="hostname" placeholder="api.example.com" class="input">
+                  <p class="subtle text-xs">Full domain name for external access (e.g., api.example.com)</p>
                 </div>
               </div>
             </div>
@@ -322,7 +323,7 @@ export function servicesList(services: Service[]): string {
         <div>
           <div class="service-title-row">
             <h4 class="service-title">${escapeHtml(s.name)}</h4>
-            ${s.externalPath ? `<span class="service-path">${escapeHtml(s.externalPath)}</span>` : ""}
+            ${s.hostname ? `<span class="service-path">${escapeHtml(s.hostname)}</span>` : ""}
           </div>
           <div class="service-meta mono">${s.serviceType === "docker"
       ? escapeHtml(s.dockerImage || "docker-image")
@@ -402,8 +403,9 @@ export function editServicePage(stack: Stack, service: Service): string {
                   </select>
                 </div>
                 <div class="field">
-                  <label class="label" for="edit-service-external-path">External Path</label>
-                  <input type="text" id="edit-service-external-path" name="external_path" value="${escapeHtml(service.externalPath || "")}" class="input">
+                  <label class="label" for="edit-service-hostname">Hostname</label>
+                  <input type="text" id="edit-service-hostname" name="hostname" value="${escapeHtml(service.hostname || "")}" class="input">
+                  <p class="subtle text-xs">Full domain name for external access (e.g., api.example.com)</p>
                 </div>
               </div>
             </div>

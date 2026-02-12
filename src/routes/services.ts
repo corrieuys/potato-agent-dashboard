@@ -7,6 +7,13 @@ import { generateUUID, wantsHTML, parseBody } from "../lib/utils";
 
 const servicesRoutes = new Hono<{ Bindings: CloudflareBindings }>();
 
+// Basic hostname validation (alphanumeric, hyphens, dots)
+function isValidHostname(hostname: string): boolean {
+	if (!hostname) return true; // Allow empty/null
+	const hostnameRegex = /^[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*$/;
+	return hostnameRegex.test(hostname) && hostname.length <= 253;
+}
+
 // List services for a stack
 servicesRoutes.get("/", async (c) => {
 	const stackId = c.req.param("stackId");
@@ -94,6 +101,14 @@ servicesRoutes.post("/", async (c) => {
 		);
 	}
 
+	// Validate hostname if provided
+	if (body.hostname && !isValidHostname(body.hostname)) {
+		if (wantsHTML(c)) {
+			return c.html(`<div class="text-red-600 p-4">Invalid hostname format</div>`, 400);
+		}
+		return c.json({ error: "Invalid hostname format" }, 400);
+	}
+
 	const id = generateUUID();
 
 	await db.insert(services).values({
@@ -117,7 +132,7 @@ servicesRoutes.post("/", async (c) => {
 		baseImage: body.base_image || null,
 		language: body.language || "auto",
 		port: parseInt(body.port),
-		externalPath: body.external_path || null,
+		hostname: body.hostname || null,
 		healthCheckPath: body.health_check_path || "/health",
 		healthCheckInterval: body.health_check_interval ? parseInt(body.health_check_interval) : 30,
 		environmentVars,
@@ -139,7 +154,7 @@ servicesRoutes.post("/", async (c) => {
 				gitUrl: services.gitUrl,
 				dockerImage: services.dockerImage,
 				port: services.port,
-				externalPath: services.externalPath,
+				hostname: services.hostname,
 			})
 			.from(services)
 			.where(eq(services.stackId, stackId));
@@ -177,6 +192,12 @@ servicesRoutes.patch("/:serviceId", async (c) => {
 	if (body.service_type !== undefined) {
 		updates.serviceType = body.service_type === "docker" ? "docker" : "git";
 	}
+	if (body.hostname !== undefined && body.hostname && !isValidHostname(body.hostname)) {
+		if (wantsHTML(c)) {
+			return c.html(`<div class="text-red-600 p-4">Invalid hostname format</div>`, 400);
+		}
+		return c.json({ error: "Invalid hostname format" }, 400);
+	}
 	if (body.git_url !== undefined) updates.gitUrl = body.git_url;
 	if (body.git_ref !== undefined) updates.gitRef = body.git_ref;
 	if (body.git_commit !== undefined) updates.gitCommit = body.git_commit;
@@ -197,8 +218,7 @@ servicesRoutes.patch("/:serviceId", async (c) => {
 	if (body.base_image !== undefined) updates.baseImage = body.base_image || null;
 	if (body.language !== undefined) updates.language = body.language || "auto";
 	if (body.port !== undefined) updates.port = parseInt(body.port);
-	if (body.external_path !== undefined)
-		updates.externalPath = body.external_path;
+	if (body.hostname !== undefined) updates.hostname = body.hostname;
 	if (body.health_check_path !== undefined)
 		updates.healthCheckPath = body.health_check_path;
 	if (body.health_check_interval !== undefined)
@@ -257,7 +277,7 @@ servicesRoutes.patch("/:serviceId", async (c) => {
 				gitUrl: services.gitUrl,
 				dockerImage: services.dockerImage,
 				port: services.port,
-				externalPath: services.externalPath,
+				hostname: services.hostname,
 			})
 			.from(services)
 			.where(eq(services.stackId, stackId));
@@ -296,7 +316,7 @@ servicesRoutes.delete("/:serviceId", async (c) => {
 				gitUrl: services.gitUrl,
 				dockerImage: services.dockerImage,
 				port: services.port,
-				externalPath: services.externalPath,
+				hostname: services.hostname,
 			})
 			.from(services)
 			.where(eq(services.stackId, stackId));

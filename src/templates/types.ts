@@ -33,7 +33,7 @@ export interface Service {
     baseImage?: string | null;
     language?: string | null;
     port: number;
-    externalPath: string | null;
+    hostname: string | null;
     healthCheckPath?: string;
     healthCheckInterval?: number;
     environmentVars?: any;

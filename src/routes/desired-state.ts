@@ -100,7 +100,7 @@ desiredStateRoutes.get("/", async (c) => {
 				base_image: s.baseImage || "",
 				language: s.language || "auto",
 				port: s.port,
-				external_path: s.externalPath,
+				hostname: s.hostname,
 				health_check_path: s.healthCheckPath,
 				health_check_interval: s.healthCheckInterval,
 				environment_vars: environmentVars,

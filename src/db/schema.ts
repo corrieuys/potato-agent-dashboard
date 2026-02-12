@@ -42,7 +42,7 @@ export const services = sqliteTable(
 		baseImage: text("base_image"),
 		language: text("language").notNull().default("auto"),
 		port: integer("port").notNull(),
-		externalPath: text("external_path"),
+		hostname: text("hostname"),
 		healthCheckPath: text("health_check_path").notNull().default("/health"),
 		healthCheckInterval: integer("health_check_interval").notNull().default(30),
 		environmentVars: text("environment_vars", { mode: "json" }),
@@ -61,6 +61,7 @@ export const services = sqliteTable(
 	},
 	(table) => ({
 		stackIdIdx: index("services_stack_id_idx").on(table.stackId),
+		hostnameIdx: index("services_hostname_idx").on(table.hostname),
 	}),
 );
 

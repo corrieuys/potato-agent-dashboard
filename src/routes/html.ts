@@ -34,7 +34,7 @@ htmlRoutes.get("/stacks/:id", async (c) => {
 			gitUrl: services.gitUrl,
 			dockerImage: services.dockerImage,
 			port: services.port,
-			externalPath: services.externalPath,
+			hostname: services.hostname,
 		})
 		.from(services)
 		.where(eq(services.stackId, id));
@@ -170,7 +170,7 @@ htmlRoutes.get("/stacks/:id/services/:serviceId/edit", async (c) => {
 			baseImage: services.baseImage,
 			language: services.language,
 			port: services.port,
-			externalPath: services.externalPath,
+			hostname: services.hostname,
 			healthCheckPath: services.healthCheckPath,
 			healthCheckInterval: services.healthCheckInterval,
 			environmentVars: services.environmentVars,
