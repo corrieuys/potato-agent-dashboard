@@ -37,11 +37,6 @@ export interface Service {
     healthCheckPath?: string;
     healthCheckInterval?: number;
     environmentVars?: any;
-    // Runtime status from agent heartbeats
-    runtimeStatus?: string;
-    healthStatus?: string;
-    agentName?: string;
-    runtimeStatusHeartbeatAt?: number | null;
 }
 
 export interface Agent {

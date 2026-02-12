@@ -46,41 +46,9 @@ htmlRoutes.get("/stacks/:id", async (c) => {
 
 	const stackAgentsWithHeartbeat = await withLatestHeartbeat(db, stackAgents);
 
-	// Get latest heartbeats to determine service statuses
-	const serviceStatuses: Record<string, { status: string; agentName: string; healthStatus?: string; createdAt: number }> = {};
-
-	for (const agent of stackAgentsWithHeartbeat) {
-		const statuses = agent.serviceStatuses || [];
-		for (const svcStatus of statuses) {
-			const service = stackServices.find((s) => s.id === svcStatus.serviceId)
-				|| stackServices.find((s) => s.name === svcStatus.name);
-			if (!service) {
-				continue;
-			}
-			const current = serviceStatuses[service.id];
-			if (!current || agent.latestHeartbeatCreatedAt > current.createdAt) {
-				serviceStatuses[service.id] = {
-					status: svcStatus.status,
-					agentName: agent.name || "Unnamed",
-					healthStatus: svcStatus.healthStatus,
-					createdAt: agent.latestHeartbeatCreatedAt,
-				};
-			}
-		}
-	}
-
-	// Merge status into services
-	const servicesWithStatus = stackServices.map(s => ({
-		...s,
-		runtimeStatus: serviceStatuses[s.id]?.status || "unknown",
-		healthStatus: serviceStatuses[s.id]?.healthStatus || "unknown",
-		agentName: serviceStatuses[s.id]?.agentName,
-		runtimeStatusHeartbeatAt: serviceStatuses[s.id]?.createdAt ?? null,
-	}));
-
 	return c.html(templates.stackDetail(
 		stack as templates.Stack,
-		servicesWithStatus as templates.Service[],
+		stackServices as templates.Service[],
 		stackAgentsWithHeartbeat as templates.Agent[]
 	));
 });

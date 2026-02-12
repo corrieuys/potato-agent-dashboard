@@ -1,5 +1,5 @@
 import { layout } from "./layout.js";
-import { escapeHtml, getHealthChipClass, getStatusChipClass } from "./helpers.js";
+import { escapeHtml } from "./helpers.js";
 import type { Service, Stack } from "./types.js";
 
 // Create service page
@@ -339,23 +339,8 @@ export function servicesList(services: Service[]): string {
             class="btn btn-danger btn-compact">Delete</button>
         </div>
       </div>
-      <div class="service-divider"></div>
-      <div class="service-rail">
-        <div class="flex flex-wrap gap-2">
-          <span class="chip ${getStatusChipClass(s.runtimeStatus)}">${escapeHtml(s.runtimeStatus || "unknown")}</span>
-          ${s.healthStatus && s.healthStatus !== "unknown" ? `<span class="chip ${getHealthChipClass(s.healthStatus)}">${escapeHtml(s.healthStatus)}</span>` : ""}
-        </div>
-        ${s.agentName ? `<div class="subtle text-xs">Last seen on ${escapeHtml(s.agentName)}</div>` : ""}
-        ${s.runtimeStatusHeartbeatAt ? `<div class="subtle text-xs">Latest heartbeat: ${escapeHtml(formatHeartbeatTimestamp(s.runtimeStatusHeartbeatAt))}</div>` : ""}
-      </div>
     </div>
   `).join("")}</div>`;
-}
-
-function formatHeartbeatTimestamp(value: number): string {
-  const millis = value < 1_000_000_000_000 ? value * 1000 : value;
-  const date = new Date(millis);
-  return Number.isNaN(date.getTime()) ? "Unknown" : date.toLocaleString();
 }
 
 // Edit service page

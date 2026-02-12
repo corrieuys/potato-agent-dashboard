@@ -149,7 +149,7 @@ export function stackDetail(stack: Stack, services: Service[], agents: Agent[]):
       <div class="section-head">
         <div>
           <div class="section-kicker">Services</div>
-          <h2 class="section-title">${services.length} Active Services</h2>
+          <h2 class="section-title">${services.length} Services</h2>
         </div>
         <a href="/stacks/${stack.id}/services/new" class="btn btn-primary btn-hero">
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
