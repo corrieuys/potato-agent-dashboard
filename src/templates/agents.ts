@@ -81,7 +81,7 @@ export function agentsList(agents: Agent[]): string {
         <div>
           <h4 class="headline text-xl">${escapeHtml(a.name || "Unnamed Agent")}</h4>
           <div class="subtle text-xs mono mt-1">ID: ${escapeHtml(a.id)}</div>
-          <p class="subtle mt-2">${formatHeartbeatTimestamp(a.lastHeartbeatAt)}</p>
+          <p class="subtle mt-2">${formatHeartbeatTimestamp(a.latestHeartbeatCreatedAt)}</p>
           ${a.heartbeatStackVersion !== undefined && a.heartbeatStackVersion !== null
       ? `<p class="subtle text-xs mt-1">Stack version: ${a.heartbeatStackVersion}</p>`
       : ""
@@ -100,12 +100,10 @@ export function agentsList(agents: Agent[]): string {
                   class="btn btn-danger btn-compact">
             Delete
           </button>
-          <span class="badge ${a.status === "online"
-      ? "badge-green"
-      : a.status === "pending"
-        ? "badge-yellow"
-        : "badge-gray"
-    }">${escapeHtml(a.status || "Unknown")}</span>
+          ${(() => {
+            const state = getConnectionState(a.latestHeartbeatCreatedAt);
+            return `<span class="badge ${state.badgeClass}">${escapeHtml(state.text)}</span>`;
+          })()}
           ${a.heartbeatAgentStatus
       ? `<span class="chip ${getStatusChipClass(a.heartbeatAgentStatus)}">${escapeHtml(a.heartbeatAgentStatus)}</span>`
       : ""
@@ -159,6 +157,26 @@ function formatHeartbeatTimestamp(value: Date | string | number | null | undefin
   return "Never connected";
 }
 
+function getConnectionState(lastHeartbeatAt: number | null | undefined): { text: string; badgeClass: string } {
+  if (!lastHeartbeatAt) {
+    return { text: "Never connected", badgeClass: "badge-gray" };
+  }
+
+  const secondsAgo = (Date.now() - lastHeartbeatAt) / 1000;
+
+  if (secondsAgo < 90) {
+    return { text: "Online", badgeClass: "badge-green" };
+  }
+
+  const minutes = Math.floor(secondsAgo / 60);
+  if (minutes < 60) {
+    return { text: `Disconnected (${minutes}m ago)`, badgeClass: "badge-red" };
+  }
+
+  const hours = Math.floor(minutes / 60);
+  return { text: `Disconnected (${hours}h ago)`, badgeClass: "badge-red" };
+}
+
 function renderAgentServicesStatus(agent: Agent): string {
   const statuses = agent.serviceStatuses || [];
   if (statuses.length === 0) {
@@ -168,21 +186,33 @@ function renderAgentServicesStatus(agent: Agent): string {
   return `<div class="space-y-2">
     <div class="subtle text-xs">Services from latest heartbeat</div>
     <div class="space-y-2">
-      ${statuses.map((svc) => `
+      ${statuses.map((svc) => {
+        const hasError = svc.lastError && svc.lastError.trim();
+        return `
         <div class="panel panel-strong" style="padding: 10px 12px;">
           <div class="flex items-center justify-between gap-2">
             <div class="headline text-sm">${escapeHtml(svc.name || svc.serviceId)}</div>
             <div class="flex flex-wrap gap-2">
               <span class="chip ${getStatusChipClass(svc.status)}">${escapeHtml(svc.status || "unknown")}</span>
               ${svc.healthStatus && svc.healthStatus !== "unknown"
-          ? `<span class="chip ${getHealthChipClass(svc.healthStatus)}">${escapeHtml(svc.healthStatus)}</span>`
-          : ""
-        }
+            ? `<span class="chip ${getHealthChipClass(svc.healthStatus)}">${escapeHtml(svc.healthStatus)}</span>`
+            : ""
+          }
             </div>
           </div>
-          ${svc.lastError ? `<div class="subtle text-xs mt-1">Last error: ${escapeHtml(svc.lastError)}</div>` : ""}
+          ${hasError ? `
+            <div class="mt-2">
+              <button onclick="const el = this.nextElementSibling; el.classList.toggle('hidden'); this.textContent = el.classList.contains('hidden') ? 'Show error' : 'Hide error';"
+                      class="text-xs text-red-600 hover:text-red-800 underline cursor-pointer">
+                Show error
+              </button>
+              <div class="hidden mt-2 p-2 bg-red-50 text-red-800 text-xs font-mono rounded border border-red-200">
+                ${escapeHtml(svc.lastError)}
+              </div>
+            </div>
+          ` : ""}
         </div>
-      `).join("")}
+      `}).join("")}
     </div>
   </div>`;
 }

@@ -64,6 +64,7 @@ desiredStateRoutes.get("/", async (c) => {
 		version: stack.version,
 		hash: computeHash(JSON.stringify({ stack, services: stackServices })),
 		poll_interval: stack.pollInterval,
+		heartbeat_interval: stack.heartbeatInterval,
 		security_mode: stack.securityMode,
 		external_proxy_port: stack.externalProxyPort,
 		services: stackServices.map((s) => {

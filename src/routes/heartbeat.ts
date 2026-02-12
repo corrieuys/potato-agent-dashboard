@@ -36,14 +36,27 @@ heartbeatRoutes.post("/", async (c) => {
 			? body.system_info
 			: null;
 
-	await db.insert(heartbeats).values({
-		agentId: agent.id,
-		stackVersion,
-		agentStatus,
-		servicesStatus,
-		securityState,
-		systemInfo,
-	});
+	await db.insert(heartbeats)
+		.values({
+			agentId: agent.id,
+			stackVersion,
+			agentStatus,
+			servicesStatus,
+			securityState,
+			systemInfo,
+			createdAt: new Date(),
+		})
+		.onConflictDoUpdate({
+			target: heartbeats.agentId,
+			set: {
+				stackVersion,
+				agentStatus,
+				servicesStatus,
+				securityState,
+				systemInfo,
+				createdAt: new Date(),
+			},
+		});
 
 	await db
 		.update(agents)

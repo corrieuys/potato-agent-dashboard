@@ -149,8 +149,9 @@ export function createServicePage(stack: Stack): string {
                   <input type="number" id="service-port" name="port" required value="8000" min="1" max="65535" class="input">
                 </div>
                 <div class="field">
-                  <label class="label" for="service-health-path">Health Check Path</label>
-                  <input type="text" id="service-health-path" name="health_check_path" value="/health" class="input">
+                  <label class="label" for="service-health-path">Health Check Path (optional)</label>
+                  <input type="text" id="service-health-path" name="health_check_path" placeholder="/health" class="input">
+                  <p class="subtle text-xs">Leave empty to only verify the container is running</p>
                 </div>
                 <div class="field">
                   <label class="label" for="service-health-interval">Health Interval (sec)</label>
@@ -503,8 +504,9 @@ export function editServicePage(stack: Stack, service: Service): string {
                   <input type="number" id="edit-service-port" name="port" required value="${service.port}" min="1" max="65535" class="input">
                 </div>
                 <div class="field">
-                  <label class="label" for="edit-service-health-path">Health Check Path</label>
-                  <input type="text" id="edit-service-health-path" name="health_check_path" value="${escapeHtml(service.healthCheckPath || "/health")}" class="input">
+                  <label class="label" for="edit-service-health-path">Health Check Path (optional)</label>
+                  <input type="text" id="edit-service-health-path" name="health_check_path" value="${escapeHtml(service.healthCheckPath || "")}" placeholder="/health" class="input">
+                  <p class="subtle text-xs">Leave empty to only verify the container is running</p>
                 </div>
                 <div class="field">
                   <label class="label" for="edit-service-health-interval">Health Interval (sec)</label>

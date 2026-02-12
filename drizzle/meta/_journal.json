@@ -71,6 +71,20 @@
       "when": 1770905633756,
       "tag": "0009_flawless_greymalkin",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1770908768260,
+      "tag": "0010_silky_zeigeist",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1770909360749,
+      "tag": "0011_faulty_night_thrasher",
+      "breakpoints": true
     }
   ]
 }

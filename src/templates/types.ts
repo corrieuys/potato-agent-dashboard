@@ -49,6 +49,7 @@ export interface Agent {
     name: string | null;
     status: string;
     lastHeartbeatAt: Date | null;
+    latestHeartbeatCreatedAt?: number | null;
     heartbeatStackVersion?: number | null;
     heartbeatAgentStatus?: string | null;
     serviceStatuses?: AgentServiceStatus[];

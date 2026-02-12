@@ -9,6 +9,7 @@ export const stacks = sqliteTable("stacks", {
 	pollInterval: integer("poll_interval").notNull().default(30),
 	securityMode: text("security_mode").notNull().default("none"),
 	externalProxyPort: integer("external_proxy_port").notNull().default(8080),
+	heartbeatInterval: integer("heartbeat_interval").notNull().default(30),
 	createdAt: integer("created_at", { mode: "timestamp" })
 		.notNull()
 		.default(sql`CURRENT_TIMESTAMP`),
@@ -43,7 +44,7 @@ export const services = sqliteTable(
 		language: text("language").notNull().default("auto"),
 		port: integer("port").notNull(),
 		hostname: text("hostname"),
-		healthCheckPath: text("health_check_path").notNull().default("/health"),
+		healthCheckPath: text("health_check_path").notNull().default(""),
 		healthCheckInterval: integer("health_check_interval").notNull().default(30),
 		environmentVars: text("environment_vars", { mode: "json" }),
 		blueGreenMode: integer("blue_green_mode", { mode: "boolean" })
@@ -126,29 +127,19 @@ export const agents = sqliteTable(
 	}),
 );
 
-export const heartbeats = sqliteTable(
-	"heartbeats",
-	{
-		id: integer("id").primaryKey({ autoIncrement: true }),
-		agentId: text("agent_id")
-			.notNull()
-			.references(() => agents.id, { onDelete: "cascade" }),
-		stackVersion: integer("stack_version"),
-		agentStatus: text("agent_status"),
-		servicesStatus: text("services_status", { mode: "json" }),
-		securityState: text("security_state", { mode: "json" }),
-		systemInfo: text("system_info", { mode: "json" }),
-		createdAt: integer("created_at", { mode: "timestamp" })
-			.notNull()
-			.default(sql`CURRENT_TIMESTAMP`),
-	},
-	(table) => ({
-		agentIdCreatedAtIdx: index("heartbeats_agent_id_created_at_idx").on(
-			table.agentId,
-			table.createdAt,
-		),
-	}),
-);
+export const heartbeats = sqliteTable("heartbeats", {
+	agentId: text("agent_id")
+		.primaryKey()
+		.references(() => agents.id, { onDelete: "cascade" }),
+	stackVersion: integer("stack_version"),
+	agentStatus: text("agent_status"),
+	servicesStatus: text("services_status", { mode: "json" }),
+	securityState: text("security_state", { mode: "json" }),
+	systemInfo: text("system_info", { mode: "json" }),
+	createdAt: integer("created_at", { mode: "timestamp" })
+		.notNull()
+		.default(sql`CURRENT_TIMESTAMP`),
+});
 
 // New table for webhook JWT tokens
 export const stackJwts = sqliteTable(

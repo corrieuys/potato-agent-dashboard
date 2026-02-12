@@ -103,7 +103,7 @@ Potato Cloud runs on your own infrastructure in two main parts:
 - **Stack**: A collection of related services that run together
 - **Service**: A single application (Git repository + build command + run command)
 - **Agent**: The program that runs on your server to deploy services
-- **External Proxy**: Routes incoming web traffic to services based on URL path
+- **External Proxy**: Routes incoming web traffic to services based on hostname (Host header)
 - **Internal DNS**: Allows services to talk to each other using names like `http://my-service.svc.internal`
 - **Secrets**: Sensitive values (API keys, passwords) stored encrypted on the agent, never in the control plane
 
@@ -160,7 +160,7 @@ On the Stack Detail page:
 
 3. Fill in optional fields:
    - **Build Command**: Command to run before starting (e.g., `npm install && npm run build`)
-   - **External Path**: URL path to expose this service (e.g., `/api` makes it available at `http://your-server:8080/api`)
+   - **Hostname**: Full domain name to expose this service (e.g., `api.example.com`). Requires DNS configuration to point to your server.
    - **Health Check Path**: Path for health checks (default: `/health`)
    - **Environment Variables**: Non-sensitive config values as JSON (e.g., `{"NODE_ENV": "production"}`)
    - **Secret Names**: List of secret names that should be injected as environment variables (e.g., `["DATABASE_URL", "API_KEY"]`). See [Managing Secrets Securely](#managing-secrets-securely) for how to set these values.
@@ -394,7 +394,7 @@ Since secrets are encrypted with a key derived from the agent ID, **you cannot b
 | **Git Commit** | Pin to specific commit (overrides branch) | `abc123def456` |
 | **SSH Key Name** | Name of SSH key for private repos | `default`, `production` |
 | **Build Command** | Run before starting service | `npm ci && npm run build` |
-| **External Path** | URL path for external access | `/api` → `http://server:8080/api` |
+| **Hostname** | Full domain name for external access (requires DNS) | `api.example.com` |
 | **Health Check Path** | HTTP path for health checks | `/health`, `/status` |
 | **Health Check Interval** | Seconds between health checks | `30` |
 | **Environment Variables** | JSON object of non-sensitive env vars | `{"NODE_ENV": "production"}` |
