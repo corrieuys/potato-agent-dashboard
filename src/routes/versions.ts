@@ -162,32 +162,50 @@ versionsRoutes.post("/switch", async (c) => {
 		);
 	}
 
-	// Update service to switch active slot
-	await db
-		.update(services)
-		.set({
-			activeVersionSlot: targetSlot,
-			gitCommit: targetVersion.commitRef,
-			updatedAt: sql`CURRENT_TIMESTAMP`,
-		})
-		.where(eq(services.id, serviceId));
+	// Use D1 batch to perform all updates atomically
+	// This prevents race conditions where health status changes between check and update
+	const rawDb = (db as any).session?.client as D1Database | undefined;
+	if (rawDb) {
+		await rawDb.batch([
+			rawDb.prepare(
+				"UPDATE services SET active_version_slot = ?, git_commit = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND EXISTS (SELECT 1 FROM service_versions WHERE id = ? AND healthy = 1)"
+			).bind(targetSlot, targetVersion.commitRef, serviceId, targetVersionId),
+			rawDb.prepare(
+				"UPDATE service_versions SET is_active = 0 WHERE service_id = ?"
+			).bind(serviceId),
+			rawDb.prepare(
+				"UPDATE service_versions SET is_active = 1 WHERE id = ?"
+			).bind(targetVersionId),
+			rawDb.prepare(
+				"UPDATE stacks SET version = version + 1 WHERE id = ?"
+			).bind(stackId),
+		]);
+	} else {
+		// Fallback for environments where raw DB is not accessible
+		await db
+			.update(services)
+			.set({
+				activeVersionSlot: targetSlot,
+				gitCommit: targetVersion.commitRef,
+				updatedAt: sql`CURRENT_TIMESTAMP`,
+			})
+			.where(eq(services.id, serviceId));
 
-	// Update version active status
-	await db
-		.update(serviceVersions)
-		.set({ isActive: false })
-		.where(eq(serviceVersions.serviceId, serviceId));
+		await db
+			.update(serviceVersions)
+			.set({ isActive: false })
+			.where(eq(serviceVersions.serviceId, serviceId));
 
-	await db
-		.update(serviceVersions)
-		.set({ isActive: true })
-		.where(eq(serviceVersions.id, targetVersionId));
+		await db
+			.update(serviceVersions)
+			.set({ isActive: true })
+			.where(eq(serviceVersions.id, targetVersionId));
 
-	// Update stack version and notify agents
-	await db
-		.update(stacks)
-		.set({ version: sql`${stacks.version} + 1` })
-		.where(eq(stacks.id, stackId));
+		await db
+			.update(stacks)
+			.set({ version: sql`${stacks.version} + 1` })
+			.where(eq(stacks.id, stackId));
+	}
 
 	const [stack] = await db.select().from(stacks).where(eq(stacks.id, stackId));
 

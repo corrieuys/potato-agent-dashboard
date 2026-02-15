@@ -3,7 +3,8 @@ import { eq, desc, sql } from "drizzle-orm";
 import { createClient } from "../db/client";
 import { stacks, services, agents } from "../db/schema";
 import * as templates from "../templates";
-import { generateUUID, wantsHTML, parseBody } from "../lib/utils";
+import { generateUUID, wantsHTML, parseBody, hashSecret } from "../lib/utils";
+import crypto from "crypto";
 
 const stacksRoutes = new Hono<{ Bindings: CloudflareBindings }>();
 
@@ -33,11 +34,16 @@ stacksRoutes.post("/", async (c) => {
 	const id = generateUUID();
 	const db = createClient(c.env.DB);
 
+	// Generate admin API key for webhook management
+	const adminApiKey = crypto.randomBytes(32).toString("hex");
+	const adminApiKeyHash = await hashSecret(adminApiKey);
+
 	await db.insert(stacks).values({
 		id,
 		name: body.name,
 		description: body.description || null,
 		version: 1,
+		adminApiKeyHash,
 		pollInterval: body.poll_interval ? parseInt(body.poll_interval) : 30,
 		securityMode: body.security_mode || "none",
 		externalProxyPort: body.external_proxy_port ? parseInt(body.external_proxy_port) : 8080,
@@ -50,7 +56,7 @@ stacksRoutes.post("/", async (c) => {
 		return c.html(templates.stackList(allStacks as templates.Stack[]));
 	}
 
-	return c.json({ stack }, 201);
+	return c.json({ stack, admin_api_key: adminApiKey }, 201);
 });
 
 // Get a specific stack

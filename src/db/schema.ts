@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { index, integer, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 
 export const stacks = sqliteTable("stacks", {
 	id: text("id").primaryKey(),
@@ -8,6 +8,7 @@ export const stacks = sqliteTable("stacks", {
 	version: integer("version").notNull().default(1),
 	pollInterval: integer("poll_interval").notNull().default(30),
 	securityMode: text("security_mode").notNull().default("none"),
+	adminApiKeyHash: text("admin_api_key_hash"),
 	externalProxyPort: integer("external_proxy_port").notNull().default(8080),
 	heartbeatInterval: integer("heartbeat_interval").notNull().default(30),
 	createdAt: integer("created_at", { mode: "timestamp" })
@@ -63,6 +64,7 @@ export const services = sqliteTable(
 	(table) => ({
 		stackIdIdx: index("services_stack_id_idx").on(table.stackId),
 		hostnameIdx: index("services_hostname_idx").on(table.hostname),
+		stackNameUniq: uniqueIndex("services_stack_id_name_uniq").on(table.stackId, table.name),
 	}),
 );
 

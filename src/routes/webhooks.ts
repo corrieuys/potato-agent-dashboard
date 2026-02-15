@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { eq, desc, and, sql } from "drizzle-orm";
 import { createClient } from "../db/client";
 import { stacks, services, stackJwts, serviceVersions } from "../db/schema";
-import { generateUUID, parseBody } from "../lib/utils";
+import { generateUUID, parseBody, hashSecret } from "../lib/utils";
 import { notifyStackAgents } from "../lib/agent-notifier";
 import crypto from "crypto";
 
@@ -12,7 +12,9 @@ const webhooksRoutes = new Hono<{ Bindings: CloudflareBindings }>();
 async function verifyAdminAccess(db: any, stackId: string, apiKey: string | undefined): Promise<boolean> {
   if (!apiKey || !stackId) return false;
   const [stack] = await db.select().from(stacks).where(eq(stacks.id, stackId));
-  return !!stack;
+  if (!stack || !stack.adminApiKeyHash) return false;
+  const providedHash = await hashSecret(apiKey);
+  return providedHash === stack.adminApiKeyHash;
 }
 
 // Helper function to validate JWT token

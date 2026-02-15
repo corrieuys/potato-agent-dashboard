@@ -17,7 +17,12 @@ import versionsRoutes from "./routes/versions";
 const app = new Hono<{ Bindings: CloudflareBindings }>();
 
 // Global middleware
-app.use("*", cors());
+app.use("*", cors({
+  origin: ["https://app.potatocloud.space"],
+  allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowHeaders: ["Content-Type", "Authorization", "X-API-Key", "X-Agent-Id", "HX-Request", "HX-Target", "HX-Trigger"],
+  credentials: true,
+}));
 app.use("*", logger());
 
 // Health check

@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc, and, inArray } from "drizzle-orm";
 import { createClient } from "../db/client";
 import { stacks, services, agents, heartbeats } from "../db/schema";
 import type { Agent as AgentRow } from "../db/schema";
@@ -288,21 +288,28 @@ async function withLatestHeartbeat(
 	db: ReturnType<typeof createClient>,
 	stackAgents: AgentRow[]
 ): Promise<AgentWithHeartbeat[]> {
-	const enriched: AgentWithHeartbeat[] = [];
-	for (const agent of stackAgents) {
-		const [latestHeartbeat] = await db
-			.select({
-				stackVersion: heartbeats.stackVersion,
-				agentStatus: heartbeats.agentStatus,
-				servicesStatus: heartbeats.servicesStatus,
-				createdAt: heartbeats.createdAt,
-			})
-			.from(heartbeats)
-			.where(eq(heartbeats.agentId, agent.id))
-			.orderBy(desc(heartbeats.createdAt))
-			.limit(1);
+	if (stackAgents.length === 0) return [];
 
-		enriched.push({
+	const agentIds = stackAgents.map((a) => a.id);
+	const allHeartbeats = await db
+		.select({
+			agentId: heartbeats.agentId,
+			stackVersion: heartbeats.stackVersion,
+			agentStatus: heartbeats.agentStatus,
+			servicesStatus: heartbeats.servicesStatus,
+			createdAt: heartbeats.createdAt,
+		})
+		.from(heartbeats)
+		.where(inArray(heartbeats.agentId, agentIds));
+
+	const heartbeatMap = new Map<string, typeof allHeartbeats[number]>();
+	for (const hb of allHeartbeats) {
+		heartbeatMap.set(hb.agentId, hb);
+	}
+
+	return stackAgents.map((agent) => {
+		const latestHeartbeat = heartbeatMap.get(agent.id);
+		return {
 			id: agent.id,
 			stackId: agent.stackId,
 			name: agent.name,
@@ -314,7 +321,6 @@ async function withLatestHeartbeat(
 			latestHeartbeatCreatedAt: latestHeartbeat?.createdAt
 				? new Date(latestHeartbeat.createdAt).getTime()
 				: 0,
-		});
-	}
-	return enriched;
+		};
+	});
 }
