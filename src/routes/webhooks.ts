@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { eq, desc, and, sql } from "drizzle-orm";
 import { createClient } from "../db/client";
-import { stacks, services, stackJwts, serviceVersions } from "../db/schema";
+import { stacks, services, stackJwts, serviceVersions, webhookDeliveries } from "../db/schema";
 import { generateUUID, parseBody, hashSecret } from "../lib/utils";
 import { notifyStackAgents } from "../lib/agent-notifier";
 import crypto from "crypto";
@@ -34,6 +34,38 @@ async function validateJwtToken(db: any, stackId: string, token: string): Promis
     .where(eq(stackJwts.id, jwt.id));
 
   return true;
+}
+
+function normalizeRepoURL(value: string | null | undefined): string | null {
+  if (!value) return null;
+  const raw = value.trim();
+  if (!raw) return null;
+
+  const sshScp = raw.match(/^git@([^:]+):(.+)$/i);
+  if (sshScp) {
+    const host = sshScp[1].toLowerCase();
+    const path = sshScp[2].replace(/\.git$/i, "").replace(/^\/+/, "").toLowerCase();
+    return `${host}/${path}`;
+  }
+
+  try {
+    const parsed = new URL(raw);
+    const host = parsed.hostname.toLowerCase();
+    const path = parsed.pathname.replace(/\.git$/i, "").replace(/^\/+/, "").toLowerCase();
+    return `${host}/${path}`;
+  } catch {
+    return raw.replace(/\.git$/i, "").toLowerCase();
+  }
+}
+
+async function verifyGitHubSignature(rawBody: string, signatureHeader: string, secret: string): Promise<boolean> {
+  const expected = `sha256=${crypto
+    .createHmac("sha256", secret)
+    .update(rawBody)
+    .digest("hex")}`;
+  const provided = signatureHeader.trim();
+  if (expected.length !== provided.length) return false;
+  return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(provided));
 }
 
 // Generate a new JWT for a stack (admin only)
@@ -154,8 +186,41 @@ webhooksRoutes.post("/github", async (c) => {
     return c.json({ error: "Invalid or expired token" }, 401);
   }
 
-  // Parse GitHub webhook payload
-  const body = await parseBody(c);
+  const eventType = c.req.header("X-GitHub-Event");
+  const deliveryId = c.req.header("X-GitHub-Delivery");
+  const signatureHeader = c.req.header("X-Hub-Signature-256");
+  const webhookSecret = ((c.env as any).GITHUB_WEBHOOK_SECRET || "").toString().trim();
+
+  if (!eventType) {
+    return c.json({ error: "Missing X-GitHub-Event header" }, 400);
+  }
+  if (!deliveryId) {
+    return c.json({ error: "Missing X-GitHub-Delivery header" }, 400);
+  }
+  if (eventType === "ping") {
+    return c.json({ success: true, message: "Ping received" });
+  }
+  if (eventType !== "push") {
+    return c.json({ success: true, message: `Ignoring ${eventType} event` }, 202);
+  }
+
+  const rawBody = await c.req.raw.text();
+  if (webhookSecret) {
+    if (!signatureHeader) {
+      return c.json({ error: "Missing X-Hub-Signature-256 header" }, 401);
+    }
+    const signatureOk = await verifyGitHubSignature(rawBody, signatureHeader, webhookSecret);
+    if (!signatureOk) {
+      return c.json({ error: "Invalid webhook signature" }, 401);
+    }
+  }
+
+  let body: any = {};
+  try {
+    body = JSON.parse(rawBody);
+  } catch {
+    return c.json({ error: "Invalid JSON body" }, 400);
+  }
 
   // Validate it's a push event
   if (!body.ref || !body.head_commit) {
@@ -165,6 +230,25 @@ webhooksRoutes.post("/github", async (c) => {
   const branch = body.ref.replace("refs/heads/", "");
   const commitSha = body.head_commit.id;
   const repoUrl = body.repository?.clone_url || body.repository?.html_url;
+  const normalizedRepoUrl = normalizeRepoURL(repoUrl);
+
+  // Idempotency: claim delivery before processing to avoid duplicate side effects.
+  try {
+    await db.insert(webhookDeliveries).values({
+      id: generateUUID(),
+      stackId,
+      deliveryId,
+      eventType,
+      commitSha,
+      processedAt: Date.now(),
+    } as any);
+  } catch (error: any) {
+    const message = String(error?.message || error || "");
+    if (message.toLowerCase().includes("unique")) {
+      return c.json({ success: true, duplicate: true, message: "Delivery already processed" });
+    }
+    throw error;
+  }
 
   // Get services that match this stack and git URL
   const stackServices = await db
@@ -180,9 +264,8 @@ webhooksRoutes.post("/github", async (c) => {
     // and if the branch matches the service's git ref
     if (
       service.gitUrl &&
-      repoUrl &&
-      (service.gitUrl === repoUrl ||
-        service.gitUrl.replace(".git", "") === repoUrl.replace(".git", ""))
+      normalizedRepoUrl &&
+      normalizeRepoURL(service.gitUrl) === normalizedRepoUrl
     ) {
       if (service.gitRef === branch) {
         // Get next version number

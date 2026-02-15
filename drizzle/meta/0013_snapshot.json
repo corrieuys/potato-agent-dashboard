@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "2aae9f29-2979-40b8-98ee-618ef51b0c9e",
-  "prevId": "bc0361dc-4588-4879-bff6-85b5a49674a5",
+  "id": "4e724f43-1340-461f-aaa5-3946f7155fb2",
+  "prevId": "2aae9f29-2979-40b8-98ee-618ef51b0c9e",
   "tables": {
     "agents": {
       "name": "agents",
@@ -821,6 +821,89 @@
       },
       "indexes": {},
       "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "webhook_deliveries": {
+      "name": "webhook_deliveries",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "stack_id": {
+          "name": "stack_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "delivery_id": {
+          "name": "delivery_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "event_type": {
+          "name": "event_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "commit_sha": {
+          "name": "commit_sha",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "processed_at": {
+          "name": "processed_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "CURRENT_TIMESTAMP"
+        }
+      },
+      "indexes": {
+        "webhook_deliveries_stack_delivery_uniq": {
+          "name": "webhook_deliveries_stack_delivery_uniq",
+          "columns": [
+            "stack_id",
+            "delivery_id"
+          ],
+          "isUnique": true
+        },
+        "webhook_deliveries_stack_id_idx": {
+          "name": "webhook_deliveries_stack_id_idx",
+          "columns": [
+            "stack_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "webhook_deliveries_stack_id_stacks_id_fk": {
+          "name": "webhook_deliveries_stack_id_stacks_id_fk",
+          "tableFrom": "webhook_deliveries",
+          "tableTo": "stacks",
+          "columnsFrom": [
+            "stack_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {}

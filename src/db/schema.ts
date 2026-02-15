@@ -167,6 +167,30 @@ export const stackJwts = sqliteTable(
 	}),
 );
 
+// Table to deduplicate webhook deliveries
+export const webhookDeliveries = sqliteTable(
+	"webhook_deliveries",
+	{
+		id: text("id").primaryKey(),
+		stackId: text("stack_id")
+			.notNull()
+			.references(() => stacks.id, { onDelete: "cascade" }),
+		deliveryId: text("delivery_id").notNull(),
+		eventType: text("event_type").notNull(),
+		commitSha: text("commit_sha"),
+		processedAt: integer("processed_at", { mode: "timestamp" })
+			.notNull()
+			.default(sql`CURRENT_TIMESTAMP`),
+	},
+	(table) => ({
+		stackDeliveryUniq: uniqueIndex("webhook_deliveries_stack_delivery_uniq").on(
+			table.stackId,
+			table.deliveryId,
+		),
+		stackIdIdx: index("webhook_deliveries_stack_id_idx").on(table.stackId),
+	}),
+);
+
 export type Stack = typeof stacks.$inferSelect;
 export type NewStack = typeof stacks.$inferInsert;
 
@@ -181,6 +205,9 @@ export type NewHeartbeat = typeof heartbeats.$inferInsert;
 
 export type StackJwt = typeof stackJwts.$inferSelect;
 export type NewStackJwt = typeof stackJwts.$inferInsert;
+
+export type WebhookDelivery = typeof webhookDeliveries.$inferSelect;
+export type NewWebhookDelivery = typeof webhookDeliveries.$inferInsert;
 
 export type ServiceVersion = typeof serviceVersions.$inferSelect;
 export type NewServiceVersion = typeof serviceVersions.$inferInsert;
