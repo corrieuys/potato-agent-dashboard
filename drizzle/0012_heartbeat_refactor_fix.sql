@@ -32,7 +32,4 @@ DROP TABLE `heartbeats`;
 -- Step 4: Rename new table
 ALTER TABLE `__new_heartbeats` RENAME TO `heartbeats`;
 --> statement-breakpoint
--- Step 5: Add heartbeat_interval to stacks if not exists
-ALTER TABLE `stacks` ADD COLUMN `heartbeat_interval` integer DEFAULT 30 NOT NULL;
---> statement-breakpoint
 PRAGMA foreign_keys=ON;
